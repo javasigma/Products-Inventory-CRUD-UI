@@ -1,0 +1,126 @@
+
+/* Dashboard Container */
+.container.mt-5 {
+    background: linear-gradient(to right, #ee9ca7, #ffdde1);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin-top: 2rem !important;
+}
+
+/* Header */
+h1.text-center {
+    color: #2c3e50;
+    font-size: 2.8rem;
+    margin-bottom: 2rem;
+    font-weight: 700;
+    position: relative;
+    text-transform: uppercase;
+}
+
+h1.text-center::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(to right, #f97316, #fb923c);
+    border-radius: 2px;
+}
+
+/* Table */
+.table {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 2rem;
+}
+
+.table thead {
+    background: linear-gradient(to right, #f97316, #fb923c);
+}
+
+.table thead th {
+    color: white;
+    font-weight: 600;
+    padding: 1rem;
+    text-transform: uppercase;
+    border: none;
+    font-size: 1rem;
+}
+
+.table tbody tr {
+    transition: transform 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(249, 115, 22, 0.05);
+    transform: translateY(-2px);
+}
+
+.table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Buttons */
+.btn-outline-secondary,
+.btn-outline-danger {
+    border-radius: 6px;
+    margin: 0.3rem;
+    padding: 0.5rem 1.2rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-outline-secondary {
+    color: #f97316;
+    border-color: #f97316;
+    background: transparent;
+}
+
+.btn-outline-secondary:hover {
+    background: #f97316;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+}
+
+.btn-outline-danger {
+    color: #ef4444;
+    border-color: #ef4444;
+    background: transparent;
+}
+
+.btn-outline-danger:hover {
+    background: #ef4444;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container.mt-5 {
+        padding: 1rem;
+    }
+
+    h1.text-center {
+        font-size: 2rem;
+    }
+
+    .table thead th,
+    .table td {
+        padding: 0.7rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-outline-secondary,
+    .btn-outline-danger {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}

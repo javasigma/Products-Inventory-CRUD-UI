@@ -1,0 +1,68 @@
+/* Produit Form Styling */
+.center-form {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: linear-gradient(to right, #fdfbfb 0%, #ebedee 100%);
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.center-form h1 {
+    color: #0EA5E9;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-weight: bold;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-control {
+    border: 2px solid #D3E4FD;
+    padding: 0.75rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #0EA5E9;
+    box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.25);
+}
+
+.form-control::placeholder {
+    color: #94A3B8;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #F97316 0%, #FB923C 100%) !important;
+    border: none !important;
+    padding: 0.75rem !important;
+    font-weight: bold !important;
+    transition: all 0.3s ease !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4) !important;
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Add some spacing between form groups */
+.form-group + .form-group {
+    margin-top: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .center-form {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+}
