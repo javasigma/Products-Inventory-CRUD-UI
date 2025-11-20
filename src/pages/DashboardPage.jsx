@@ -692,37 +692,53 @@ const DashboardContent = ({
         </Col>
 
         <Col xl={4} lg={5} className="mb-4">
-          <Card className="h-100">
-            <Card.Header className="card-header-custom">
-              <h5 className="mb-0"> Actions</h5>
-            </Card.Header>
-            <Card.Body>
-              <div className="quick-actions">
-                <Button variant="outline-secondary" className="w-100 mb-2" href="/products">
-                  <Package size={16} className="me-2" />
-                  Manage Products
-                </Button>
-                <Button variant="outline-secondary" className="w-100 mb-2" href="/customers">
-                  <Users size={16} className="me-2" />
-                  View Customers
-                </Button>
-                <Button variant="outline-secondary" className="w-100 mb-2" href="/vendors">
-                  <Truck size={16} className="me-2" />
-                  View Vendors
-                </Button>
-                <Button variant="outline-secondary" className="w-100 mb-2" href="/receipts">
-                  <ShoppingCart size={16} className="me-2" />
-                  Create Sale
-                </Button>
-                <Button 
-                  variant="outline-secondary" 
-                  className="w-100 mb-2" 
-                  onClick={() => document.querySelector('.ai-chat-btn')?.click()}
-                >
-                  <Brain size={16} className="me-2" />
-                  Ask AI Assistant
-                </Button>
-              </div>
+  <Card className="h-100">
+    <Card.Header className="card-header-custom">
+      <h5 className="mb-0">Quick Actions</h5>
+    </Card.Header>
+    <Card.Body>
+      <div className="quick-actions">
+        <Button 
+          variant="outline-secondary" 
+          className="w-100 mb-2" 
+          onClick={() => navigate('/products')}
+        >
+          <Package size={16} className="me-2" />
+          Manage Products
+        </Button>
+        <Button 
+          variant="outline-secondary" 
+          className="w-100 mb-2" 
+          onClick={() => navigate('/customers')}
+        >
+          <Users size={16} className="me-2" />
+          View Customers
+        </Button>
+        <Button 
+          variant="outline-secondary" 
+          className="w-100 mb-2" 
+          onClick={() => navigate('/vendors')}
+        >
+          <Truck size={16} className="me-2" />
+          View Vendors
+        </Button>
+        <Button 
+          variant="outline-secondary" 
+          className="w-100 mb-2" 
+          onClick={() => navigate('/receipts')}
+        >
+          <ShoppingCart size={16} className="me-2" />
+          Create Sale
+        </Button>
+        <Button 
+          variant="outline-secondary" 
+          className="w-100 mb-2" 
+          onClick={() => document.querySelector('.ai-chat-btn')?.click()}
+        >
+          <Brain size={16} className="me-2" />
+          Ask AI Assistant
+        </Button>
+      </div>
               
               <hr />
               
