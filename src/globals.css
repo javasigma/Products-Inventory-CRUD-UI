@@ -1,0 +1,92 @@
+/* bootstrap-variables.css - Refactored from Tailwind CSS design system */
+
+/* Light mode variables (equivalent to :root) */
+:root {
+    --bs-body-bg: hsl(0, 0%, 100%);
+    --bs-body-color: hsl(215, 25%, 27%);
+    --bs-card-bg: hsl(0, 0%, 100%);
+    --bs-card-color: hsl(215, 25%, 27%);
+    --bs-primary: hsl(215, 25%, 27%);
+    --bs-primary-rgb: 47, 58, 78; /* Approximate RGB for hsl(215, 25%, 27%) */
+    --bs-primary-bg-subtle: hsl(210, 40%, 96%);
+    --bs-primary-text-emphasis: hsl(0, 0%, 100%);
+    --bs-secondary: hsl(210, 40%, 96%);
+    --bs-secondary-rgb: 228, 230, 235;
+    --bs-secondary-color: hsl(215, 25%, 27%);
+    --bs-muted: hsl(210, 40%, 96%);
+    --bs-muted-color: hsl(215, 16%, 47%);
+    --bs-accent: hsl(188, 100%, 44%);
+    --bs-accent-rgb: 0, 153, 204;
+    --bs-accent-text: hsl(0, 0%, 100%);
+    --bs-danger: hsl(0, 84%, 60%);
+    --bs-danger-rgb: 220, 53, 69;
+    --bs-danger-text: hsl(0, 0%, 100%);
+    --bs-border-color: hsl(214, 32%, 91%);
+    --bs-input-border-color: hsl(214, 32%, 91%);
+    --bs-focus-ring-color: hsl(188, 100%, 44%);
+    --gradient-primary: linear-gradient(135deg, hsl(215, 25%, 27%), hsl(215, 28%, 17%));
+    --gradient-accent: linear-gradient(135deg, hsl(188, 100%, 44%), hsl(199, 89%, 48%));
+    --gradient-hero: linear-gradient(135deg, hsl(215, 25%, 27%) 0%, hsl(188, 100%, 44%) 100%);
+    --bs-box-shadow-sm: 0 4px 6px -1px hsl(215 25% 27% / 0.1);
+    --bs-box-shadow: 0 10px 15px -3px hsl(215 25% 27% / 0.1);
+    --bs-box-shadow-lg: 0 25px 50px -12px hsl(215 25% 27% / 0.25);
+    --bs-border-radius: 0.5rem;
+    --sidebar-bg: hsl(0, 0%, 98%);
+    --sidebar-color: hsl(240, 5.3%, 26.1%);
+    --sidebar-primary: hsl(240, 5.9%, 10%);
+    --sidebar-primary-text: hsl(0, 0%, 98%);
+    --sidebar-accent: hsl(240, 4.8%, 95.9%);
+    --sidebar-accent-text: hsl(240, 5.9%, 10%);
+    --sidebar-border: hsl(220, 13%, 91%);
+    --sidebar-ring: hsl(217.2, 91.2%, 59.8%);
+  }
+  
+  /* Dark mode variables (equivalent to .dark) */
+  .dark {
+    --bs-body-bg: hsl(215, 28%, 17%);
+    --bs-body-color: hsl(0, 0%, 100%);
+    --bs-card-bg: hsl(215, 28%, 17%);
+    --bs-card-color: hsl(0, 0%, 100%);
+    --bs-primary: hsl(0, 0%, 100%);
+    --bs-primary-rgb: 255, 255, 255;
+    --bs-primary-text-emphasis: hsl(215, 25%, 27%);
+    --bs-secondary: hsl(215, 25%, 27%);
+    --bs-secondary-rgb: 47, 58, 78;
+    --bs-secondary-color: hsl(0, 0%, 100%);
+    --bs-muted: hsl(215, 25%, 27%);
+    --bs-muted-color: hsl(215, 20%, 65%);
+    --bs-accent: hsl(188, 100%, 44%);
+    --bs-accent-rgb: 0, 153, 204;
+    --bs-accent-text: hsl(0, 0%, 100%);
+    --bs-danger: hsl(0, 63%, 31%);
+    --bs-danger-rgb: 199, 61, 57;
+    --bs-danger-text: hsl(0, 0%, 100%);
+    --bs-border-color: hsl(215, 25%, 27%);
+    --bs-input-border-color: hsl(215, 25%, 27%);
+    --bs-focus-ring-color: hsl(188, 100%, 44%);
+    --gradient-primary: linear-gradient(135deg, hsl(215, 28%, 17%), hsl(215, 25%, 27%));
+    --gradient-accent: linear-gradient(135deg, hsl(188, 100%, 44%), hsl(199, 89%, 48%));
+    --gradient-hero: linear-gradient(135deg, hsl(215, 28%, 17%) 0%, hsl(188, 100%, 44%) 100%);
+    --bs-box-shadow-sm: 0 4px 6px -1px hsl(0 0% 0% / 0.2);
+    --bs-box-shadow: 0 10px 15px -3px hsl(0 0% 0% / 0.2);
+    --bs-box-shadow-lg: 0 25px 50px -12px hsl(0 0% 0% / 0.4);
+    --bs-border-radius: 0.5rem;
+    --sidebar-bg: hsl(240, 5.9%, 10%);
+    --sidebar-color: hsl(240, 4.8%, 95.9%);
+    --sidebar-primary: hsl(224.3, 76.3%, 48%);
+    --sidebar-primary-text: hsl(0, 0%, 100%);
+    --sidebar-accent: hsl(240, 3.7%, 15.9%);
+    --sidebar-accent-text: hsl(240, 4.8%, 95.9%);
+    --sidebar-border: hsl(240, 3.7%, 15.9%);
+    --sidebar-ring: hsl(217.2, 91.2%, 59.8%);
+  }
+  
+  /* Apply base styles (equivalent to @layer base) */
+  * {
+    border-color: var(--bs-border-color);
+  }
+  
+  body {
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+  }

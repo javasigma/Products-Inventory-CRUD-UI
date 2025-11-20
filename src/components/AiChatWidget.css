@@ -1,0 +1,410 @@
+/* src/components/AiChatWidget.css */
+ /* src/components/AiChatWidget.css */
+
+:root {
+  /* Qwen-inspired palette: soft purple, blue, and warm orange */
+  --qwen-purple: #5845ee;      /* Primary: light purple */
+  --qwen-blue: #66a6ff;        /* Secondary: soft blue */
+  --qwen-orange: #ff9e6d;      /* Accent: warm coral-orange */
+  --qwen-bg: #4fafeb;          /* Clean white background */
+  --qwen-bg-light: #abb4db;    /* Slight off-white for depth */
+  --qwen-card-bg: #4aeef1;     /* Message card background */
+  --qwen-text-primary: #1e1e2e;
+  --qwen-text-secondary: #64748b;
+  --qwen-text-muted: #94a3b8;
+  --qwen-border: #eaeef4;
+  --qwen-shadow: rgba(97, 78, 241, 0.863);
+  --qwen-shadow-hover: rgba(138, 124, 240, 0.25);
+  --qwen-orange-shadow: rgba(255, 158, 109, 0.2);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --transition: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.fixed-bottom {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1050;
+}
+
+/* Floating AI Button – Qwen Style */
+.ai-chat-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--qwen-purple), var(--qwen-blue));
+  border: none;
+  box-shadow:
+    0 6px 20px var(--qwen-shadow),
+    0 2px 6px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.4rem;
+  transition: all var(--transition);
+  cursor: pointer;
+}
+
+.ai-chat-btn:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow:
+    0 10px 25px var(--qwen-shadow-hover),
+    0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Offcanvas Body */
+.ai-chat-offcanvas .offcanvas-body {
+  background: var(--qwen-bg);
+  padding: 0;
+}
+
+/* Header */
+.ai-chat-offcanvas .offcanvas-header {
+  background: var(--qwen-bg);
+  border-bottom: 1px solid var(--qwen-border);
+  padding: 1.25rem 1.5rem;
+}
+
+.ai-chat-offcanvas .offcanvas-title {
+  font-weight: 700;
+  color: var(--qwen-text-primary);
+  font-size: 1.25rem;
+  background: linear-gradient(135deg, var(--qwen-purple), var(--qwen-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ai-chat-offcanvas .btn-close {
+  font-size: 1.2rem;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.ai-chat-offcanvas .btn-close:hover {
+  opacity: 1;
+  color: var(--qwen-purple);
+}
+
+/* Messages Container */
+.messages-container {
+  background: var(--qwen-bg-light);
+  min-height: 420px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+/* Message Bubbles */
+.message-bubble {
+  padding: 14px 18px;
+  border-radius: 20px;
+  position: relative;
+  word-wrap: break-word;
+  max-width: 85%;
+  line-height: 1.5;
+  animation: messageSlide 0.3s ease-out;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.user-message {
+  background: linear-gradient(135deg, var(--qwen-purple), var(--qwen-blue));
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 6px;
+  font-weight: 500;
+}
+
+.assistant-message {
+  background: var(--qwen-card-bg);
+  color: var(--qwen-text-primary);
+  align-self: flex-start;
+  border: 1px solid var(--qwen-border);
+  border-bottom-left-radius: 6px;
+  font-weight: 400;
+}
+
+.message-content {
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+}
+
+.message-time {
+  font-size: 0.65rem;
+  color: var(--qwen-text-muted);
+  opacity: 0.8;
+}
+
+
+/* Quick Questions */
+.quick-questions {
+  background: linear-gradient(135deg, #f9f7ff, #f0f8ff);
+  padding: 1.25rem;
+  border-top: 1px solid var(--qwen-border);
+}
+
+.quick-questions .btn {
+  background: white;
+  color: var(--qwen-purple);
+  border: 1px solid var(--qwen-border);
+  border-radius: 50px;
+  font-size: 0.82rem;
+  padding: 6px 16px;
+  margin: 0.25rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 6px rgba(138, 124, 240, 0.1);
+}
+
+.quick-questions .btn:hover {
+  background: rgba(138, 124, 240, 0.08);
+  border-color: var(--qwen-purple);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px var(--qwen-shadow);
+}
+
+/* Data Table */
+.data-table .table {
+  background: white;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-top: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.data-table .table th,
+.data-table .table td {
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  border-color: var(--qwen-border);
+}
+
+.data-table .table th {
+  background: #f8fafc;
+  color: var(--qwen-text-secondary);
+  font-weight: 600;
+}
+
+.data-raw {
+  background: #f8fafc !important;
+  border: 1px solid var(--qwen-border);
+  color: var(--qwen-text-primary);
+  font-family: 'SF Mono', monospace;
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* Scrollbar */
+.messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+  background: #58c7e6;
+  border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Animation */
+@keyframes messageSlide {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .fixed-bottom {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .ai-chat-btn {
+    width: 52px;
+    height: 52px;
+    font-size: 1.2rem;
+  }
+
+  .ai-chat-offcanvas {
+    width: 100% !important;
+  }
+
+  .messages-container {
+    min-height: 350px;
+    padding: 1rem;
+  }
+
+  .message-bubble {
+    max-width: 90%;
+  }
+
+  .quick-questions .btn {
+    font-size: 0.75rem;
+    padding: 5px 14px;
+  }
+}
+/* ✨ Enhanced Message Actions – Qwen Inspired */
+.message-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.15),
+    visibility 0.25s;
+  pointer-events: none;
+}
+
+.message-bubble:hover .message-actions {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.trash-btn {
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  overflow: hidden;
+  transition:
+    color 0.2s ease,
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease;
+  box-shadow: none;
+}
+
+.trash-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle, rgba(138, 124, 240, 0.15) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: 8px;
+}
+
+.trash-btn:hover {
+  color: #8a7cf0;
+  transform: scale(1.12) rotate(2deg);
+  box-shadow:
+    0 4px 12px rgba(138, 124, 240, 0.25),
+    0 0 0 2px rgba(255, 158, 109, 0.2);
+}
+
+.trash-btn:hover::before {
+  opacity: 1;
+}
+
+.trash-btn:active {
+  transform: scale(1.05) rotate(0);
+}
+
+.trash-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.7;
+  stroke: currentColor;
+  fill: none;
+  transition: stroke 0.2s ease;
+}
+
+/* Optional: Add a tiny "pulse" on first render (if needed) */
+@keyframes pulseIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* If you want the trash to appear by default on assistant messages (not just hover) */
+.assistant-message .message-actions {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+/* ✨ Large, Borderless Clear Chat Button – Qwen Style */
+.clear-chat-button {
+  /* Size */
+  width: 120px;
+  height: 120px;
+  
+  /* No borders, no background */
+  border: none;
+  background: transparent;
+  
+  /* Center content */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Text/icon styling */
+  font-size: 28px; /* Makes 🗑️ large and crisp */
+  color: #94a3b8; /* Muted gray (matches your theme) */
+  
+  /* Smooth interaction */
+  cursor: pointer;
+  transition:
+    color 0.25s ease,
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease;
+  
+  /* Optional: subtle rounded corners */
+  border-radius: 12px;
+  
+  /* Prevent Bootstrap interference */
+  padding: 0;
+  margin: 0;
+  outline: none;
+}
+
+.clear-chat-button:hover {
+  /* Warm orange on hover (your accent color) */
+  color: #ff9e6d;
+  
+  /* Gentle lift + rotation */
+  transform: scale(1.08) rotate(2deg);
+  
+  /* Soft glow */
+  box-shadow:
+    0 6px 16px rgba(255, 158, 109, 0.25),
+    0 0 0 3px rgba(138, 124, 240, 0.15);
+}
+
+.clear-chat-button:active {
+  transform: scale(1.02) rotate(0);
+}

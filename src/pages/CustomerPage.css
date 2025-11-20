@@ -1,0 +1,248 @@
+/* src/pages/CustomerPage.css */
+:root {
+  /* Use ProductPage's dark theme */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-color: #334155;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  
+  /* Customer color: use teal from ProductPage's success/info palette */
+  --customer-primary: #34d399; /* Teal */
+  --customer-gradient: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  
+  /* Shared vars */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --transition-normal: 0.3s ease;
+}
+
+.customer-page-container {
+  padding: 24px;
+  background: var(--bg-primary);
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-primary);
+}
+
+.customer-page-header {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+  padding: 2rem;
+  border-radius: var(--radius-xl);
+  box-shadow: 
+    0 8px 32px var(--shadow-color),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.customer-page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(52, 211, 153, 0.3) 50%, 
+    transparent 100%);
+}
+
+.customer-page-title {
+  color: var(--text-primary);
+  font-weight: 800;
+  font-size: 2.25rem;
+  margin-bottom: 0.5rem;
+  background: var(--customer-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.customer-page-subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+.customer-action-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: all var(--transition-normal);
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
+}
+
+.customer-action-btn-primary {
+  background: var(--customer-gradient);
+  border: none;
+  color: white;
+}
+
+.customer-action-btn-primary:hover {
+  background: linear-gradient(135deg, #44a08d 0%, #4ecdc4 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(52, 211, 153, 0.3);
+}
+
+/* Table */
+.customer-table {
+  --bs-table-bg: transparent;
+  --bs-table-border-color: var(--border-color);
+  margin-bottom: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 
+    0 4px 24px var(--shadow-color),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.customer-table th {
+  border-top: none;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: rgba(30, 41, 59, 0.8);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  padding: 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.customer-table td {
+  vertical-align: middle;
+  padding: 1.25rem 0.75rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color var(--transition-normal);
+  background: var(--bg-card);
+}
+
+.customer-table tbody tr:hover td {
+  background: rgba(52, 211, 153, 0.1);
+}
+
+/* Table Action Buttons */
+.table-action-btn-warning {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.table-action-btn-warning:hover {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: rgba(251, 191, 36, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+}
+
+.table-action-btn-danger {
+  background: rgba(248, 113, 113, 0.1);
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.table-action-btn-danger:hover {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: rgba(248, 113, 113, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(248, 113, 113, 0.2);
+}
+
+/* Modal */
+.customer-modal .modal-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: 
+    0 20px 60px var(--shadow-color),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+}
+
+.customer-modal .modal-header {
+  background: rgba(30, 41, 59, 0.8);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1.5rem;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.customer-modal .modal-body {
+  padding: 1.5rem;
+  background: var(--bg-card);
+}
+
+.customer-modal .modal-footer {
+  background: rgba(30, 41, 59, 0.8);
+  border-top: 1px solid var(--border-color);
+  padding: 1.25rem 1.5rem;
+}
+
+/* Form */
+.customer-form .form-label {
+  color: wheat;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.customer-form .form-control {
+  background:wheat;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+  transition: all var(--transition-normal);
+}
+
+.customer-form .form-control:focus {
+  background: rgba(173, 235, 210, 0.1);
+  border-color: rgba(20, 199, 133, 0.5);
+  box-shadow: 
+    0 0 0 3px white
+    inset 0 1px 0 white;
+}
+
+/* Empty/Loading */
+.customer-empty-state,
+.customer-loading-container,
+.customer-error-container {
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+.customer-loading-container .spinner-border {
+  border-color: var(--customer-primary) transparent var(--customer-primary) transparent;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .customer-page-container { padding: 16px; }
+  .customer-page-header { padding: 1.5rem; }
+  .customer-page-title { font-size: 1.75rem; }
+}
+
+@media (max-width: 576px) {
+  .customer-table { border-radius: 0; border-left: none; border-right: none; }
+  .table-action-btn { display: block; width: 100%; margin-right: 0; }
+}

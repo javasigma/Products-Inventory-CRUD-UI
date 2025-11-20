@@ -1,0 +1,62 @@
+/* Homepage.css - Light Theme */
+:root {
+    /* Light Color Palette */
+    --home-bg-primary: #e9ecef;
+    --home-bg-secondary: #f8f9fa;
+    --home-bg-card: #ffffff;
+    --home-text-primary: #403930;
+    --home-text-secondary: #6c757d;
+    --home-text-muted: #272d32;
+    --home-border-color: #e9ecef;
+    --home-shadow-color: rgba(0, 0, 0, 0.1);
+    --home-primary: #007bff;
+    --home-primary-light: #333e47;
+  }
+  
+  /* Homepage Base Styles */
+  .homepage-container {
+    background: var(--home-bg-primary);
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--home-text-primary);
+  }
+  
+  /* Ensure all homepage components use light theme */
+  .homepage-container .card {
+    background: var(--home-bg-card);
+    border: 1px solid var(--home-border-color);
+    box-shadow: 0 4px 24px var(--home-shadow-color);
+  }
+  
+  .homepage-container .bg-primary {
+    background-color: var(--home-primary) !important;
+  }
+  
+  .homepage-container .text-primary {
+    color: var(--home-primary) !important;
+  }
+  
+  .homepage-container .bg-light {
+    background-color: var(--home-bg-secondary) !important;
+  }
+  
+  /* Override any dark styles that might leak from other CSS */
+  .homepage-container .navbar {
+    background-color: var(--home-bg-card) !important;
+    border-bottom: 1px solid var(--home-border-color);
+  }
+  
+  .homepage-container .navbar-brand,
+  .homepage-container .nav-link {
+    color: var(--home-text-primary) !important;
+  }
+  
+  .homepage-container footer {
+    background-color: var(--home-bg-secondary) !important;
+    color: var(--home-text-primary) !important;
+  }
+  /* Footer Text Color */
+.homepage-container footer,
+.homepage-container footer * {
+  color: #1c1f21 !important; /* Gray color */
+}

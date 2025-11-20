@@ -1,0 +1,21 @@
+/* Navbar.css */
+/* Hamburger button styling */.navbar-toggler {  transition: transform 0.3s ease, background-color 0.3s ease;}
+.navbar-toggler:hover {  transform: scale(1.1);  background-color: rgba(13, 110, 253, 0.1); /* Subtle primary color hover */}
+/* Ensure hamburger icon is centered */.navbar-toggler svg {  transition: transform 0.3s ease;}
+.navbar-toggler:hover svg {  transform: rotate(90deg); /* Subtle rotation for interactivity */}
+/* Offcanvas animation */.offcanvas-custom {  transition: transform 0.3s ease-in-out;}
+/* Offcanvas link styling */.offcanvas-body .nav-link {  font-size: 1.1rem;  padding: 0.75rem 1rem;  transition: background-color 0.2s ease, color 0.2s ease;}
+.offcanvas-body .nav-link:hover {  background-color: rgba(13, 110, 253, 0.1);  color: #0d6efd; /* Bootstrap primary color */}
+/* Button styling in offcanvas */.offcanvas-body .btn {  width: 100%;  text-align: center;}
+.logo-img {
+    height: auto;
+    width: 130px;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* subtle shadow for depth */
+    background: transparent;
+    transition: box-shadow 0.3s;
+  }
+  .logo-img:hover {
+    box-shadow: 0 6px 16px rgba(13,110,253,0.08); /* gentle hover effect */
+  }

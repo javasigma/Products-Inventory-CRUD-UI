@@ -1,0 +1,11 @@
+export { default as PrivacyPolicy } from './PrivacyPolicy';
+export { default as TermsOfService } from './TermsOfService';
+export { default as CookiePolicy } from './CookiePolicy';
+export { default as HelpCenter } from './HelpCenter';
+export { default as ContactUs } from './ContactUs';
+export { default as Community } from './Community';
+export { default as StatusPage } from './StatusPage';
+export { default as Security } from './Security';
+export { default as Integrations } from './Integrations';
+export { default as ApiDocumentation } from './ApiDocumentation';
+export { default as Pricing } from './Pricing';

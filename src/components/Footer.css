@@ -1,0 +1,78 @@
+/* Footer.css */
+
+/* Social media buttons */
+.social-link {
+    transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .social-link:hover {
+    transform: scale(1.2);
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #0c0b0b;
+  }
+  
+  /* Navigation links */
+  .nav-link-custom {
+    position: relative;
+    transition: color 0.3s ease;
+  }
+  
+  .nav-link-custom:hover {
+    color: #181515 !important; /* Full white on hover */
+  }
+  
+  /* Underline animation for links */
+  .nav-link-custom::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -2px;
+    left: 0;
+    background-color: #1b1919;
+    transition: width 0.3s ease;
+  }
+  
+  .nav-link-custom:hover::after {
+    width: 100%;
+  }
+  
+  /* Bottom footer links */
+  .bottom-link {
+    position: relative;
+    transition: color 0.3s ease;
+  }
+  
+  .bottom-link:hover {
+    color: #191616 !important;
+  }
+  
+  .bottom-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -2px;
+    left: 0;
+    background-color: #141212;
+    transition: width 0.3s ease;
+  }
+  
+  .bottom-link:hover::after {
+    width: 100%;
+  }
+  
+  /* Ensure footer text is readable */
+  .text-white-50 {
+    opacity: 0.7;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 767px) {
+    .social-link {
+      transform: none; /* Disable scale on mobile to avoid layout shifts */
+    }
+    .social-link:hover {
+      transform: scale(1.1); /* Subtle scale for touch devices */
+    }
+  }

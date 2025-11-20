@@ -1,0 +1,85 @@
+.featuresCard {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  border: 1px solid #e3f2fd;
+  background: white;
+}
+
+.featuresCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0.75rem 1.5rem rgba(255, 140, 0, 0.25);
+  background: linear-gradient(135deg, #fff5e6, #ffebcc);
+  border-color: #ffb347;
+}
+
+.iconContainer {
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  background: linear-gradient(135deg, #ee9b5c, #1976d2) !important;
+}
+
+.featuresCard:hover .iconContainer {
+  background: linear-gradient(135deg, #ffa500, #ff8c00) !important;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+}
+
+.iconContainer svg {
+  transition: transform 0.3s ease;
+  color: white !important;
+  filter: brightness(1.1);
+}
+
+.featuresCard:hover .iconContainer svg {
+  transform: scale(1.2);
+}
+
+.cardBody {
+  padding: 1.5rem;
+  background: transparent;
+}
+
+.cardTitle {
+  margin-bottom: 0.75rem;
+  color: #1976d2;
+  font-weight: 700;
+}
+
+.featuresCard:hover .cardTitle {
+  color: #d35400;
+}
+
+.cardText {
+  color: #546e7a;
+  line-height: 1.6;
+}
+
+.featuresCard:hover .cardText {
+  color: #8b4513;
+}
+
+/* Optional: Add a subtle blue border animation on hover */
+.featuresCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2196f3, #1976d2);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.featuresCard:hover::before {
+  background: linear-gradient(90deg, #ffd700, #ffa500, #ff8c00);
+  transform: scaleX(1);
+}
+
+@media (max-width: 768px) {
+  .featuresCard {
+      transform: none;
+  }
+  .featuresCard:hover {
+      transform: translateY(-3px);
+  }
+}

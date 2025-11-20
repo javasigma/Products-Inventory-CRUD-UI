@@ -1,0 +1,247 @@
+:root {
+    /* Use ProductPage's dark theme */
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border-color: #334155;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    
+    /* Vendor color: use amber (complementary to customer teal) */
+    --vendor-primary: #fbbf24; /* Amber */
+    --vendor-gradient: linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%);
+    
+    /* Shared vars */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --transition-normal: 0.3s ease;
+  }
+  
+  .vendor-page-container {
+    padding: 24px;
+    background: var(--bg-primary);
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+  }
+  
+  .vendor-page-header {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    padding: 2rem;
+    border-radius: var(--radius-xl);
+    box-shadow: 
+      0 8px 32px var(--shadow-color),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .vendor-page-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(251, 191, 36, 0.3) 50%, 
+      transparent 100%);
+  }
+  
+  .vendor-page-title {
+    color: var(--text-primary);
+    font-weight: 800;
+    font-size: 2.25rem;
+    margin-bottom: 0.5rem;
+    background: var(--vendor-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .vendor-page-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0;
+  }
+  
+  .vendor-action-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    transition: all var(--transition-normal);
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    color: var(--text-primary);
+  }
+  
+  .vendor-action-btn-primary {
+    background: var(--vendor-gradient);
+    border: none;
+    color: white;
+  }
+  
+  .vendor-action-btn-primary:hover {
+    background: linear-gradient(135deg, #f59e0b 0%, #fcd34d 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(251, 191, 36, 0.3);
+  }
+  
+  /* Table */
+  .vendor-table {
+    --bs-table-bg: transparent;
+    --bs-table-border-color: var(--border-color);
+    margin-bottom: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 
+      0 4px 24px var(--shadow-color),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  
+  .vendor-table th {
+    border-top: none;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: rgba(30, 41, 59, 0.8);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 1.25rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .vendor-table td {
+    vertical-align: middle;
+    padding: 1.25rem 0.75rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color var(--transition-normal);
+    background: var(--bg-card);
+  }
+  
+  .vendor-table tbody tr:hover td {
+    background: rgba(251, 191, 36, 0.1);
+  }
+  
+  /* Table Action Buttons */
+  .table-action-btn-warning {
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+    border-color: rgba(251, 191, 36, 0.3);
+  }
+  
+  .table-action-btn-warning:hover {
+    background: rgba(251, 191, 36, 0.2);
+    border-color: rgba(251, 191, 36, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+  }
+  
+  .table-action-btn-danger {
+    background: rgba(248, 113, 113, 0.1);
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.3);
+  }
+  
+  .table-action-btn-danger:hover {
+    background: rgba(248, 113, 113, 0.2);
+    border-color: rgba(248, 113, 113, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(248, 113, 113, 0.2);
+  }
+  
+  /* Modal */
+  .vendor-modal .modal-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: 
+      0 20px 60px var(--shadow-color),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+  }
+  
+  .vendor-modal .modal-header {
+    background: rgba(30, 41, 59, 0.8);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem;
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+  
+  .vendor-modal .modal-body {
+    padding: 1.5rem;
+    background: var(--bg-card);
+  }
+  
+  .vendor-modal .modal-footer {
+    background: rgba(30, 41, 59, 0.8);
+    border-top: 1px solid var(--border-color);
+    padding: 1.25rem 1.5rem;
+  }
+  
+  /* Form */
+  .vendor-form .form-label {
+    color: wheat;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .vendor-form .form-control {
+    background: wheat;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    transition: all var(--transition-normal);
+  }
+  
+  .vendor-form .form-control:focus {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.5);
+    box-shadow: 
+      0 0 0 3px white
+      inset 0 1px 0 white;
+  }
+  
+  /* Empty/Loading */
+  .vendor-empty-state,
+  .vendor-loading-container,
+  .vendor-error-container {
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+  }
+  
+  .vendor-loading-container .spinner-border {
+    border-color: var(--vendor-primary) transparent var(--vendor-primary) transparent;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .vendor-page-container { padding: 16px; }
+    .vendor-page-header { padding: 1.5rem; }
+    .vendor-page-title { font-size: 1.75rem; }
+  }
+  
+  @media (max-width: 576px) {
+    .vendor-table { border-radius: 0; border-left: none; border-right: none; }
+    .table-action-btn { display: block; width: 100%; margin-right: 0; }
+  }
