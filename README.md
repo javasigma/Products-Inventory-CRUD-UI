@@ -1,4 +1,4 @@
-# 📦 AksEma Inventory Management System
+# 📦 AksemaInventory Management System
 
 A modern, secure, and AI-enhanced Inventory Management System built for small to medium businesses. Manage products, customers, vendors, sales, and stock levels — all in one intuitive dashboard.
 
