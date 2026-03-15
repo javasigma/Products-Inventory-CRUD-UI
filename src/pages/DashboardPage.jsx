@@ -505,37 +505,17 @@ const DashboardContent = ({
   return (
     <Container fluid className="dashboard-container">
 <Row className="mb-4">
-  <Col>
-    <div className="dashboard-header d-flex justify-content-between align-items-center flex-wrap gap-3">
-      
-      {/* Left side: title + subtitle */}
-      <div>
-        <h1 className="dashboard-title mb-1">
-          {data.welcomeMessage || `Dashboard - ${data.user?.companyName || 'Your Company'}`}
-        </h1>
-        <p className="dashboard-subtitle text-muted mb-0">
-          Real-time business activities and AI-powered insights
-        </p>
-      </div>
-
-      {/* Right side: the button */}
-      <Button
-        variant="light"
-        className="orange-dashboard-btn"
-        size="lg"
-        onClick={() => {
-          document.getElementById("dashboard-settings")?.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
-        }}
-      >
-        Dashboard Settings
-      </Button>
-
-    </div>
-  </Col>
-</Row>
+        <Col>
+          <div className="dashboard-header">
+            <h1 className="dashboard-title">
+              {data.welcomeMessage || Dashboard - ${data.user?.companyName || 'Your Company'}}
+            </h1>
+            <p className="dashboard-subtitle">
+              Real-time business activities and AI-powered insights
+            </p>
+          </div>
+        </Col>
+      </Row>
 
       {/* AI Insights Section */}
       <Row className="mb-4">
