@@ -352,7 +352,9 @@ useEffect(() => {
         onRefreshActivities={handleRefreshActivities}
       />
       <AiChatWidget />
-      <DashboardSettings id="dashboard-settings" />
+      <div id="dashboard-settings">
+  <DashboardSettings />
+</div>
     </>
   );
 }
@@ -505,17 +507,43 @@ const DashboardContent = ({
   return (
     <Container fluid className="dashboard-container">
 <Row className="mb-4">
-        <Col>
-          <div className="dashboard-header">
-           <h1 className="dashboard-title">
-  {data?.welcomeMessage || 'Dashboard -'}
-</h1>
-            <p className="dashboard-subtitle">
-              Real-time business activities and AI-powered insights
-            </p>
-          </div>
-        </Col>
-      </Row>
+  <Col>
+    <div className="dashboard-header d-flex justify-content-between align-items-start flex-wrap gap-3">
+      <div>
+        <h1 className="dashboard-title">
+          {data?.welcomeMessage || 'Dashboard -'}
+        </h1>
+        <p className="dashboard-subtitle">
+          Real-time business activities and AI-powered insights
+        </p>
+      </div>
+      <Button 
+        variant="outline-primary" 
+        size="sm" 
+        onClick={() => {
+          const element = document.getElementById('dashboard-settings');
+          if (element) {
+            element.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'start',
+              inline: 'nearest'
+            });
+          } else {
+            console.warn('⚠️ Dashboard settings element not found in DOM');
+            // Fallback: scroll to bottom of page
+            window.scrollTo({ 
+              top: document.documentElement.scrollHeight, 
+              behavior: 'smooth' 
+            });
+          }
+        }}
+        className="align-self-center"
+      >
+        ⚙️ Dashboard Settings
+      </Button>
+    </div>
+  </Col>
+</Row>
 
       {/* AI Insights Section */}
       <Row className="mb-4">
