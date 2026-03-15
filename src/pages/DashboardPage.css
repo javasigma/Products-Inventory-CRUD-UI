@@ -358,6 +358,12 @@
   transition: background-color var(--transition-fast);
 }
 
+/* Yellow activity dates - overrides Bootstrap's .text-muted */
+.activity-table td small.text-muted {
+  color: #fbbf24 !important;    /* Warm yellow matching your theme */
+  font-weight: 500;
+  opacity: 1;
+}
 .activity-table tbody tr:hover td {
   background: rgba(255, 255, 255, 0.05);
 }
