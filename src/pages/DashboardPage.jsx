@@ -507,9 +507,9 @@ const DashboardContent = ({
 <Row className="mb-4">
         <Col>
           <div className="dashboard-header">
-            <h1 className="dashboard-title">
-              {data.welcomeMessage || Dashboard - ${data.user?.companyName || 'Your Company'}}
-            </h1>
+           <h1 className="dashboard-title">
+  {data?.welcomeMessage || 'Dashboard -'}
+</h1>
             <p className="dashboard-subtitle">
               Real-time business activities and AI-powered insights
             </p>
