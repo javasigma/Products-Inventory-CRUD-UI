@@ -5,7 +5,7 @@ A modern, secure, and AI-enhanced Inventory Management System built for small to
 ## 🔗 Links
 
 - **Live Demo:** https://aksemainventory.netlify.app/
-- **Developer Portfolio & Contact:**promote.port@gmail.com
+- **Developer Portfolio & Contact:** promote.port@gmail.com
 
 ## 🌟 Features
 
