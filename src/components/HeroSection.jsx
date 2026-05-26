@@ -39,7 +39,7 @@ export function HeroSection() {
             Start Now For Free
             <ArrowRight size={20} className="ms-2" />
           </Button>
-          <Button size="lg" variant="outline-primary" className="d-flex align-items-center px-4" href="https://charming-madeleine-4b74b6.netlify.app/" target="_blank" rel="noopener noreferrer">
+          <Button size="lg" variant="outline-primary" className="d-flex align-items-center px-4" href="promote.port@gmail.com" target="_blank" rel="noopener noreferrer">
             <User size={20} className="me-2" />
             Developer
           </Button>
