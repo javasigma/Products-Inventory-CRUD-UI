@@ -46,7 +46,7 @@ A modern, secure, and AI-enhanced Inventory Management System built for small to
 
 If you're interested in reviewing, contributing to, or collaborating on the backend, please contact me through my portfolio website:
 
-👉 https://charming-madeleine-4b74b6.netlify.app/
+👉 (https://www.instagram.com/ayayatek_ti_asnom/)
 
 I'm open to partnerships, internships, and technical discussions!
 
