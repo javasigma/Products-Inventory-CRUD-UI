@@ -1,28 +1,37 @@
-// src/api/api.js
-const BASE_URL = 'https://productsinventaksema.zeabur.app';
 import { auth } from './firebase';
-// src/api/api.js
 
+const BASE_URL = 'https://productsinventaksema.zeabur.app';
 
+/**
+ * Robustly sanitizes URLs to ensure there are no duplicate slashes (e.g. "//api")
+ * while safely preserving the protocol double-slash (e.g. "https://").
+ */
+const cleanUrl = (url) => {
+  if (!url) return url;
+  const parts = url.split('://');
+  if (parts.length > 1) {
+    return parts[0] + '://' + parts.slice(1).join('://').replace(/\/+/g, '/');
+  }
+  return url.replace(/\/+/g, '/');
+};
+
+// 👇 HELPER: Get auth token and make fetch request with automatic URL sanitization
 const fetchWithAuth = async (url, options = {}) => {
   try {
     const currentUser = auth.currentUser;
+    
     if (!currentUser) {
       throw new Error('No authenticated user');
     }
 
     const token = await currentUser.getIdToken();
     
-    // ✅ FIX: Handle URL properly
     let fullUrl;
     if (url.startsWith('http')) {
-      fullUrl = url;
-    } else if (url.startsWith('/')) {
-      // If url starts with /, just append to BASE_URL (no extra slash)
-      fullUrl = `${BASE_URL}${url}`;
+      fullUrl = cleanUrl(url); // Sanitizes absolute URLs
     } else {
-      // If no leading slash, add one
-      fullUrl = `${BASE_URL}/${url}`;
+      // Sanitizes relative paths joined with the base URL
+      fullUrl = cleanUrl(`${BASE_URL}${url.startsWith('/') ? url : `/${url}`}`);
     }
 
     console.log('🔐 [fetchWithAuth] Making request to:', fullUrl);
@@ -50,11 +59,12 @@ const fetchWithAuth = async (url, options = {}) => {
       throw new Error(`API error: ${response.status} - ${errorText}`);
     }
     
+    // Handle non-JSON responses, like for PDF downloads
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       return response.json();
     } else {
-      return response;
+      return response; // Return the response object for non-JSON data
     }
     
   } catch (error) {
@@ -63,94 +73,25 @@ const fetchWithAuth = async (url, options = {}) => {
   }
 };
 
-// ✅ UPDATE ALL FUNCTIONS to use relative URLs (starting with /)
-export const registerUser = async (currentUser) => {
-  // ... existing code ...
-  const result = await fetch(`${BASE_URL}/api/users/register`, {
-    // ... 
-  });
-};
-
-export const getUserProfile = async () => {
-  try {
-    return await fetchWithAuth('/api/users/profile'); // ✅ relative path
-  } catch (error) {
-    // ...
-  }
-};
-
-// ✅ ALL OTHER FUNCTIONS should use relative paths:
-export const getDashboardData = () =>
-  fetchWithAuth('/api/dashboard');  // ✅ No BASE_URL
-
-export const fetchProducts = () => 
-  fetchWithAuth('/api/ecom_drog/produitmagasinbricolage');  // ✅
-
-export const fetchCustomers = () => 
-  fetchWithAuth('/api/ecom_drog/customerpath');  // ✅
-
-export const fetchVendors = () => 
-  fetchWithAuth('/api/ecom_drog/vendorpath');  // ✅
-
-export const getActivityStats = async () => {
-  try {
-    console.log("🔄 [API] Calling stats endpoint...");
-    const data = await fetchWithAuth('/api/activity/stats');  // ✅
-    console.log("✅ [API] Stats data received:", data);
-    return data;
-  } catch (error) {
-    console.error("❌ [API] Error in getActivityStats:", error);
-    throw error;
-  }
-};
-
-// ✅ These functions already use fetch directly, keep as is:
-export const healthCheck = () => 
-  fetch(`${BASE_URL}/api/users/health`).then(res => res.text());
-
-export const bulkImportProducts = async (formDataFile) => {
-  const currentUser = auth.currentUser;
-  if (!currentUser) throw new Error('No authenticated user');
-  const token = await currentUser.getIdToken();
-
-  const response = await fetch(`${BASE_URL}/api/ecom_drog/produitmagasinbricolage/import`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`
-    },
-    body: formDataFile
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`API error: ${response.status} - ${errorText}`);
-  }
-  return response.json();
-};
-
 // 👇 AUTH & USER ENDPOINTS
-// ✅ ADD THIS FUNCTION: Auto-register users with ALL required MySQL fields
-// 👇 AUTH & USER ENDPOINTS
-// ✅ ADD THIS FUNCTION: Auto-register users with ALL required MySQL fields
-// ✅ ADD export keyword so it can be imported in AuthContext
 export const registerUser = async (currentUser) => {
   console.log('👤 [API] User not found in backend, registering...');
   
-  // ✅ Provide values for ALL required fields that match your MySQL schema
   const userData = {
     uid: currentUser.uid,
     email: currentUser.email,
     companyName: currentUser.displayName || 'My Business',
-    companyAddress: '123 Main Street',        // Required by MySQL
-    companyCity: 'New York',                  // Required by MySQL
-    companyPhone: '+1-555-0123',              // Required by MySQL
-    companyTaxId: 'TAX-ID-PENDING'           // Required by MySQL
+    companyAddress: '123 Main Street',
+    companyCity: 'New York',
+    companyPhone: '+1-555-0123',
+    companyTaxId: 'TAX-ID-PENDING'
   };
 
   console.log('👤 [API] Registering user with data:', userData);
 
   try {
-    const result = await fetch(`${BASE_URL}/api/users/register`, {
+    const sanitizedUrl = cleanUrl(`${BASE_URL}/api/users/register`);
+    const result = await fetch(sanitizedUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -162,7 +103,6 @@ export const registerUser = async (currentUser) => {
       const errorText = await result.text();
       console.log('👤 [API] Registration response:', errorText);
       
-      // If user already exists (due to race condition), that's fine
       if (errorText.includes('USER_EXISTS') || errorText.includes('EMAIL_EXISTS')) {
         console.log('✅ [API] User already exists in backend');
         return { message: 'User already exists' };
@@ -179,7 +119,6 @@ export const registerUser = async (currentUser) => {
   }
 };
 
-// ✅ UPDATE: getUserProfile with auto-registration
 export const getUserProfile = async () => {
   try {
     return await fetchWithAuth('/api/users/profile');
@@ -189,7 +128,6 @@ export const getUserProfile = async () => {
       const currentUser = auth.currentUser;
       if (currentUser) {
         await registerUser(currentUser);
-        // Retry getting profile after registration
         return await fetchWithAuth('/api/users/profile');
       }
     }
@@ -201,7 +139,7 @@ export const fetchUserByUid = (uid) =>
   fetchWithAuth(`${BASE_URL}/api/users/by-uid/${uid}`);
 
 export const healthCheck = () => 
-  fetch(`${BASE_URL}/api/users/health`).then(res => res.text());
+  fetch(cleanUrl(`${BASE_URL}/api/users/health`)).then(res => res.text());
 
 // 👇 DASHBOARD
 export const getDashboardData = () =>
@@ -211,25 +149,21 @@ export const getDashboardData = () =>
 export const fetchProducts = () => 
   fetchWithAuth(`${BASE_URL}/api/ecom_drog/produitmagasinbricolage`);
 
-// ✅ Fetch product by ID
 export const fetchProductById = (id) => 
   fetchWithAuth(`${BASE_URL}/api/ecom_drog/produitmagasinbricolage/${id}`);
 
-// ✅ Create product (JSON)
 export const createProduct = (product) =>
   fetchWithAuth(`${BASE_URL}/api/ecom_drog/produitmagasinbricolage`, {
     method: 'POST',
     body: JSON.stringify(product)
   });
 
-// ✅ Update product (JSON)
 export const updateProduct = (id, productData) =>
   fetchWithAuth(`${BASE_URL}/api/ecom_drog/produitmagasinbricolage/${id}`, {
     method: 'PUT',
     body: JSON.stringify(productData)
   });
 
-// ✅ Delete product
 export const deleteProduct = (id) =>
   fetchWithAuth(`${BASE_URL}/api/ecom_drog/produitmagasinbricolage/${id}`, {
     method: 'DELETE'
@@ -288,7 +222,6 @@ export const createReceipt = async (orderData) => {
     items: itemsToSend
   };
 
-  // ✅ Use the fetchWithAuth helper. It handles the token automatically.
   return fetchWithAuth(`/api/ecom_drog/receiptpath`, {
     method: 'POST',
     body: JSON.stringify(payload),
@@ -313,53 +246,31 @@ export const downloadReceiptPdf = (id) =>
     }
   });
 
-
-// --- NEW: deleteSale function ---
+// --- deleteSale function ---
 export const deleteSale = async (id) => {
-  // ✅ Also use fetchWithAuth here for consistency.
   return fetchWithAuth(`/api/ecom_drog/receiptpath/${id}`, {
     method: 'DELETE'
   });
 };
 
-
-
-
-// 👇 AI ENDPOINTS - FIXED VERSION
+// 👇 AI ENDPOINTS
 export const aiQuery = (prompt, mode = 'assist') =>
   fetchWithAuth(`${BASE_URL}/api/ai/query`, {
     method: 'POST',
     body: JSON.stringify({ prompt, mode })
   });
 
-// 👇 ANALYTICS ENDPOINTS (for dashboard)
-
-
-// In your api.jsx, update getProducts and getCustomers:
-
-// In api.jsx - FIXED VERSION
+// 👇 ANALYTICS ENDPOINTS
 export const getProducts = async () => {
   try {
     console.log("🔄 [API] Fetching products...");
     const response = await fetchWithAuth(`${BASE_URL}/api/ecom_drog/produitmagasinbricolage`);
-    
-    // Check if we got a valid response
     if (!response) {
       throw new Error('No response received - network error');
     }
-    
-    console.log("🔄 [API] Products response status:", response.status);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    console.log("✅ [API] Products data received, count:", data.length);
-    return data;
+    return response;
   } catch (error) {
     console.error('❌ [API] Error fetching products:', error);
-    // Return empty array instead of throwing
     return [];
   }
 };
@@ -368,30 +279,16 @@ export const getCustomers = async () => {
   try {
     console.log("🔄 [API] Fetching customers...");
     const response = await fetchWithAuth(`${BASE_URL}/api/ecom_drog/customerpath`);
-    
-    // Check if we got a valid response
     if (!response) {
       throw new Error('No response received - network error');
     }
-    
-    console.log("🔄 [API] Customers response status:", response.status);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch customers: ${response.status} ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    console.log("✅ [API] Customers data received, count:", data.length);
-    return data;
+    return response;
   } catch (error) {
     console.error('❌ [API] Error fetching customers:', error);
-    // Return empty array instead of throwing
     return [];
   }
 };
 
-
-/// ✅ Get activity stats (GET)
 export const getActivityStats = async () => {
   try {
     console.log("🔄 [API] Calling stats endpoint...");
@@ -403,8 +300,10 @@ export const getActivityStats = async () => {
     throw error;
   }
 };
+
 export const getMonthlyRevenue = (months = 1) =>
   fetchWithAuth(`${BASE_URL}/api/analytics/monthly-revenue?months=${months}`);
+
 export const getTopProducts = (limit = 10, period = '30d') =>
   fetchWithAuth(`${BASE_URL}/api/analytics/top-products?limit=${limit}&period=${period}`);
 
@@ -418,18 +317,17 @@ export const getDemandForecast = (sku, weeks = 8) =>
 export const getRecentActivity = () =>
   fetchWithAuth(`${BASE_URL}/api/activity/recent`);
 
-// ✅ Bulk Import Products (CSV or PDF)
+// Bulk Imports
 export const bulkImportProducts = async (formDataFile) => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error('No authenticated user');
-
   const token = await currentUser.getIdToken();
+  const sanitizedUrl = cleanUrl(`${BASE_URL}/api/ecom_drog/produitmagasinbricolage/import`);
 
-  const response = await fetch(`${BASE_URL}/api/ecom_drog/produitmagasinbricolage/import`, {
+  const response = await fetch(sanitizedUrl, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`
-      // ❌ don't set Content-Type here; let browser set multipart boundaries automatically
     },
     body: formDataFile
   });
@@ -444,14 +342,13 @@ export const bulkImportProducts = async (formDataFile) => {
 export const bulkImportCustomers = async (formDataFile) => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error('No authenticated user');
-
   const token = await currentUser.getIdToken();
+  const sanitizedUrl = cleanUrl(`${BASE_URL}/api/ecom_drog/customers/import`);
 
-  const response = await fetch(`${BASE_URL}/api/ecom_drog/customers/import`, {
+  const response = await fetch(sanitizedUrl, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`
-      // Let browser auto-set Content-Type for multipart
     },
     body: formDataFile
   });
@@ -466,10 +363,10 @@ export const bulkImportCustomers = async (formDataFile) => {
 export const bulkImportSales = async (formDataFile) => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error('No authenticated user');
-
   const token = await currentUser.getIdToken();
+  const sanitizedUrl = cleanUrl(`${BASE_URL}/api/ecom_drog/sales/import`);
 
-  const response = await fetch(`${BASE_URL}/api/ecom_drog/sales/import`, {
+  const response = await fetch(sanitizedUrl, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`
@@ -487,10 +384,10 @@ export const bulkImportSales = async (formDataFile) => {
 export const bulkImportVendors = async (formDataFile) => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error('No authenticated user');
-
   const token = await currentUser.getIdToken();
+  const sanitizedUrl = cleanUrl(`${BASE_URL}/api/ecom_drog/vendors/import`);
 
-  const response = await fetch(`${BASE_URL}/api/ecom_drog/vendors/import`, {
+  const response = await fetch(sanitizedUrl, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`
@@ -505,13 +402,7 @@ export const bulkImportVendors = async (formDataFile) => {
   return response.json();
 };
 
-
-
-
-
 // 👇 USER PREFERENCES
-// User Profile Endpoints
-// Enhanced API functions with better error handling
 export const updateUserProfile = async (profileData) => {
   console.log('👤 [API] Updating user profile:', profileData);
   try {
@@ -552,18 +443,10 @@ export const updateCompanyDetails = (companyData) =>
     body: JSON.stringify(companyData)
   });
 
-
-
-// Add these to your api.js
 export const exportData = (type) =>
   fetchWithAuth(`${BASE_URL}/api/export/${type}`);
 
-
-
-// Replace these functions in your api.js:
-
-
-// 👇 DATA EXPORT ENDPOINTS - NEW
+// 👇 DATA EXPORT ENDPOINTS
 export const exportInventory = () =>
   fetchWithAuth(`${BASE_URL}/api/export/inventory`);
 
@@ -575,15 +458,6 @@ export const exportCustomers = () =>
 
 export const exportSales = () =>
   fetchWithAuth(`${BASE_URL}/api/export/sales`);
-
-
-
-
-
-
-
-
-
 
 // FINAL EXPORTS
 export { fetchWithAuth, BASE_URL };
