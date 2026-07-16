@@ -1,31 +1,32 @@
 // src/api/api.js
 const BASE_URL = 'https://productsinventaksema.zeabur.app';
 import { auth } from './firebase';
+// src/api/api.js
 
-// 👇 NEW: Helper to get auth token and make fetch request
+
 const fetchWithAuth = async (url, options = {}) => {
   try {
     const currentUser = auth.currentUser;
-    
     if (!currentUser) {
       throw new Error('No authenticated user');
     }
 
     const token = await currentUser.getIdToken();
-    console.log('🔐 [fetchWithAuth] Making request to:', url);
-
-      
+    
+    // ✅ FIX: Handle URL properly
     let fullUrl;
     if (url.startsWith('http')) {
-      fullUrl = url; // Already absolute
+      fullUrl = url;
+    } else if (url.startsWith('/')) {
+      // If url starts with /, just append to BASE_URL (no extra slash)
+      fullUrl = `${BASE_URL}${url}`;
     } else {
-      // For all API calls, use relative paths starting with /api
-      fullUrl = `${BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
+      // If no leading slash, add one
+      fullUrl = `${BASE_URL}/${url}`;
     }
 
     console.log('🔐 [fetchWithAuth] Making request to:', fullUrl);
 
- 
     const config = {
       ...options,
       headers: {
@@ -49,19 +50,82 @@ const fetchWithAuth = async (url, options = {}) => {
       throw new Error(`API error: ${response.status} - ${errorText}`);
     }
     
-    // Handle non-JSON responses, like for PDF downloads
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       return response.json();
     } else {
-      return response; // Return the response object for non-JSON data
+      return response;
     }
     
   } catch (error) {
     console.error('🔐 [fetchWithAuth] Request failed:', error);
-    // Re-throw the error to be caught by the caller
     throw error; 
   }
+};
+
+// ✅ UPDATE ALL FUNCTIONS to use relative URLs (starting with /)
+export const registerUser = async (currentUser) => {
+  // ... existing code ...
+  const result = await fetch(`${BASE_URL}/api/users/register`, {
+    // ... 
+  });
+};
+
+export const getUserProfile = async () => {
+  try {
+    return await fetchWithAuth('/api/users/profile'); // ✅ relative path
+  } catch (error) {
+    // ...
+  }
+};
+
+// ✅ ALL OTHER FUNCTIONS should use relative paths:
+export const getDashboardData = () =>
+  fetchWithAuth('/api/dashboard');  // ✅ No BASE_URL
+
+export const fetchProducts = () => 
+  fetchWithAuth('/api/ecom_drog/produitmagasinbricolage');  // ✅
+
+export const fetchCustomers = () => 
+  fetchWithAuth('/api/ecom_drog/customerpath');  // ✅
+
+export const fetchVendors = () => 
+  fetchWithAuth('/api/ecom_drog/vendorpath');  // ✅
+
+export const getActivityStats = async () => {
+  try {
+    console.log("🔄 [API] Calling stats endpoint...");
+    const data = await fetchWithAuth('/api/activity/stats');  // ✅
+    console.log("✅ [API] Stats data received:", data);
+    return data;
+  } catch (error) {
+    console.error("❌ [API] Error in getActivityStats:", error);
+    throw error;
+  }
+};
+
+// ✅ These functions already use fetch directly, keep as is:
+export const healthCheck = () => 
+  fetch(`${BASE_URL}/api/users/health`).then(res => res.text());
+
+export const bulkImportProducts = async (formDataFile) => {
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error('No authenticated user');
+  const token = await currentUser.getIdToken();
+
+  const response = await fetch(`${BASE_URL}/api/ecom_drog/produitmagasinbricolage/import`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    body: formDataFile
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`API error: ${response.status} - ${errorText}`);
+  }
+  return response.json();
 };
 
 // 👇 AUTH & USER ENDPOINTS
