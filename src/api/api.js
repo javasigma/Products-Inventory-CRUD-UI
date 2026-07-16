@@ -1,5 +1,5 @@
 // src/api/api.js
-const BASE_URL = 'https://products-api.zeabur.app';
+const BASE_URL = 'https://productsinventaksema.zeabur.app/';
 import { auth } from './firebase';
 
 // 👇 NEW: Helper to get auth token and make fetch request
