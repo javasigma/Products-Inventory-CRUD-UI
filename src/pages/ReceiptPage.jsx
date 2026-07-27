@@ -1,12 +1,65 @@
 // src/pages/ReceiptPage.jsx
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Alert, Spinner, InputGroup, FormControl } from 'react-bootstrap';
+import { Table, Button, Modal, Form, Alert, Spinner, InputGroup, FormControl, Badge } from 'react-bootstrap';
 import { 
-  FileText, DollarSign, Users, ArrowLeft, Search, Plus
+  FileText, DollarSign, Users, ArrowLeft, Search, Plus,
+  ShoppingCart, Truck, RotateCcw, FileCheck, Receipt, CreditCard
 } from 'lucide-react';
 import { fetchReceipts, createReceipt, fetchProducts, downloadReceiptPdf, fetchCustomers, deleteSale } from '../api/api';
 import './ReceiptPage.css';
 import { useNavigate } from 'react-router-dom';
+
+// Document types configuration
+const DOCUMENT_TYPES = [
+  { 
+    id: 'BON_COMMANDE', 
+    label: 'Bon de Commande', 
+    icon: ShoppingCart,
+    color: '#3b82f6',
+    requiresItems: true,
+    description: 'Commande client'
+  },
+  { 
+    id: 'BON_LIVRAISON', 
+    label: 'Bon de Livraison', 
+    icon: Truck,
+    color: '#22c55e',
+    requiresItems: true,
+    description: 'Livraison marchandises'
+  },
+  { 
+    id: 'BON_AVOIR', 
+    label: 'Bon d\'Avoir', 
+    icon: RotateCcw,
+    color: '#f59e0b',
+    requiresItems: true,
+    description: 'Retour produit'
+  },
+  { 
+    id: 'BON_DEVIS', 
+    label: 'Bon Devis', 
+    icon: FileCheck,
+    color: '#8b5cf6',
+    requiresItems: true,
+    description: 'Proposition commerciale'
+  },
+  { 
+    id: 'FACTURE', 
+    label: 'Facture', 
+    icon: FileText,
+    color: '#ef4444',
+    requiresItems: true,
+    description: 'Facture complète'
+  },
+  { 
+    id: 'RECU_AVANCE', 
+    label: 'Reçu d\'Avance', 
+    icon: CreditCard,
+    color: '#06b6d4',
+    requiresItems: false,
+    description: 'Paiement avance'
+  }
+];
 
 const ReceiptPage = () => {
   const [receipts, setReceipts] = useState([]);
@@ -22,10 +75,13 @@ const ReceiptPage = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
+    documentType: 'BON_COMMANDE',
     customerId: '',
     totalPrice: 0,
     orderDate: new Date().toISOString().split('T')[0],
-    items: []
+    items: [],
+    advanceAmount: '',
+    notes: ''
   });
   
   const [selectedProductId, setSelectedProductId] = useState('');
@@ -133,37 +189,54 @@ const ReceiptPage = () => {
   };
 
   const handleCreate = async () => {
-    if (!formData.customerId || formData.items.length === 0) {
-      setError("Veuillez sélectionner un client et au moins un article.");
+    if (!formData.customerId) {
+      setError("Veuillez sélectionner un client.");
       return;
     }
+
+    const selectedDocType = DOCUMENT_TYPES.find(d => d.id === formData.documentType);
+    if (selectedDocType.requiresItems && formData.items.length === 0) {
+      setError("Veuillez sélectionner au moins un article.");
+      return;
+    }
+
     try {
       const selectedCustomer = customers.find(c => c.id == formData.customerId);
       if (!selectedCustomer) {
-        setError("Please select a valid customer");
+        setError("Client invalide");
         return;
       }
 
       await createReceipt({
+        documentType: formData.documentType,
         customerName: selectedCustomer.name,
         orderDate: formData.orderDate + 'T00:00:00',
         totalPrice: formData.totalPrice,
-        items: formData.items
+        items: formData.items,
+        advanceAmount: formData.advanceAmount,
+        notes: formData.notes
       });
       
-      setFormData({
-        customerId: '',
-        totalPrice: 0,
-        orderDate: new Date().toISOString().split('T')[0],
-        items: []
-      });
-      setSelectedProductId('');
-      setSelectedQuantity(1);
+      resetForm();
       setShowModal(false);
       loadReceipts();
     } catch (err) {
       setError(err.message);
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      documentType: 'BON_COMMANDE',
+      customerId: '',
+      totalPrice: 0,
+      orderDate: new Date().toISOString().split('T')[0],
+      items: [],
+      advanceAmount: '',
+      notes: ''
+    });
+    setSelectedProductId('');
+    setSelectedQuantity(1);
   };
 
   const handlePreviewPdf = async (id) => {
@@ -213,7 +286,7 @@ const ReceiptPage = () => {
 
   const getSelectedCustomerName = () => {
     const customer = customers.find(c => c.id == formData.customerId);
-    return customer ? customer.name : 'No customer selected';
+    return customer ? customer.name : 'Aucun client sélectionné';
   };
 
   const selectedProductObject = products.find(p => p.id == selectedProductId);
@@ -223,6 +296,12 @@ const ReceiptPage = () => {
 
   const totalRevenue = receipts.reduce((sum, r) => sum + (parseFloat(r.totalPrice) || 0), 0);
   const uniqueCustomers = new Set(receipts.map(r => r.customerName)).size;
+
+  const getDocumentTypeBadge = (type) => {
+    const docType = DOCUMENT_TYPES.find(d => d.id === type);
+    if (!docType) return <Badge bg="secondary">{type}</Badge>;
+    return <Badge style={{ backgroundColor: docType.color }}>{docType.label}</Badge>;
+  };
 
   if (loading) return (
     <div className="rcpt-loading">
@@ -243,10 +322,14 @@ const ReceiptPage = () => {
     return (
       order.id.toString().includes(query) ||
       (order.customerName && order.customerName.toLowerCase().includes(query)) ||
+      (order.documentType && order.documentType.toLowerCase().includes(query)) ||
       (order.orderDate && new Date(order.orderDate).toLocaleDateString().toLowerCase().includes(query)) ||
       (order.totalPrice && order.totalPrice.toString().includes(query))
     );
   });
+
+  const currentDocType = DOCUMENT_TYPES.find(d => d.id === formData.documentType);
+  const requiresItems = currentDocType?.requiresItems !== false;
 
   return (
     <div className="rcpt-page">
@@ -256,8 +339,8 @@ const ReceiptPage = () => {
           <ArrowLeft size={16} /> Retour
         </Button>
         <div className="rcpt-header-content">
-          <h1><FileText size={28} /> Reçus de Vente</h1>
-          <p>Gérez vos commandes et reçus clients</p>
+          <h1><FileText size={28} /> Documents</h1>
+          <p>Gérez vos bons de commande, livraison, avoir, devis, factures et reçus</p>
         </div>
       </header>
 
@@ -267,7 +350,7 @@ const ReceiptPage = () => {
           <FileText size={20} />
           <div>
             <span className="rcpt-stat-value">{receipts.length}</span>
-            <span className="rcpt-stat-label">Commandes</span>
+            <span className="rcpt-stat-label">Documents</span>
           </div>
         </div>
         <div className="rcpt-stat-card success">
@@ -291,14 +374,14 @@ const ReceiptPage = () => {
         <InputGroup className="rcpt-search">
           <InputGroup.Text><Search size={16} /></InputGroup.Text>
           <FormControl
-            placeholder="Rechercher par client, date, montant..."
+            placeholder="Rechercher par document, client, date..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </InputGroup>
         <div className="rcpt-actions">
           <Button className="rcpt-btn-primary" onClick={() => setShowModal(true)}>
-            <Plus size={18} /> Nouvelle Commande
+            <Plus size={18} /> Nouveau Document
           </Button>
         </div>
       </div>
@@ -308,7 +391,8 @@ const ReceiptPage = () => {
         <Table className="rcpt-table">
           <thead>
             <tr>
-              <th>N° Commande</th>
+              <th>N°</th>
+              <th>Type</th>
               <th>Client</th>
               <th>Date</th>
               <th>Total</th>
@@ -319,16 +403,17 @@ const ReceiptPage = () => {
           <tbody>
             {filteredReceipts.length === 0 ? (
               <tr>
-                <td colSpan="6" className="rcpt-empty">
+                <td colSpan="7" className="rcpt-empty">
                   <FileText size={48} />
-                  <p>Aucun reçu trouvé</p>
-                  <small>Créez votre première commande</small>
+                  <p>Aucun document trouvé</p>
+                  <small>Créez votre premier document</small>
                 </td>
               </tr>
             ) : (
               filteredReceipts.map((order) => (
                 <tr key={order.id}>
                   <td><code className="rcpt-id">#{order.id}</code></td>
+                  <td>{getDocumentTypeBadge(order.documentType)}</td>
                   <td className="rcpt-client">{order.customerName}</td>
                   <td>{new Date(order.orderDate).toLocaleDateString('fr-FR')}</td>
                   <td><span className="rcpt-price">{formatPrice(order.totalPrice)}</span></td>
@@ -351,13 +436,36 @@ const ReceiptPage = () => {
         </Table>
       </div>
 
-      {/* Create Order Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered className="rcpt-modal">
+      {/* Create Document Modal */}
+      <Modal show={showModal} onHide={resetForm} size="lg" centered className="rcpt-modal">
         <Modal.Header closeButton>
-          <Modal.Title>Créer une Commande</Modal.Title>
+          <Modal.Title>Créer un Document</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
+            {/* Document Type Selection */}
+            <Form.Group className="mb-3">
+              <Form.Label>Type de Document *</Form.Label>
+              <div className="rcpt-doc-types">
+                {DOCUMENT_TYPES.map(docType => {
+                  const Icon = docType.icon;
+                  const isSelected = formData.documentType === docType.id;
+                  return (
+                    <div
+                      key={docType.id}
+                      className={`rcpt-doc-type ${isSelected ? 'selected' : ''}`}
+                      style={{ borderColor: isSelected ? docType.color : '#e2e8f0' }}
+                      onClick={() => setFormData({ ...formData, documentType: docType.id })}
+                    >
+                      <Icon size={24} style={{ color: isSelected ? docType.color : '#94a3b8' }} />
+                      <span className="rcpt-doc-type-label">{docType.label}</span>
+                      <span className="rcpt-doc-type-desc">{docType.description}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </Form.Group>
+
             <Form.Group className="mb-3">
               <Form.Label>Client *</Form.Label>
               <Form.Select
@@ -372,11 +480,6 @@ const ReceiptPage = () => {
                   </option>
                 ))}
               </Form.Select>
-              {formData.customerId && (
-                <Form.Text className="text-muted">
-                  Client: {getSelectedCustomerName()}
-                </Form.Text>
-              )}
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -389,88 +492,121 @@ const ReceiptPage = () => {
               />
             </Form.Group>
 
-            <div className="rcpt-items-section">
-              <h6>Ajouter des Articles</h6>
-              <div className="row g-2">
-                <div className="col-md-6">
-                  <Form.Label>Produit</Form.Label>
-                  <Form.Select
-                    value={selectedProductId}
-                    onChange={(e) => {
-                      setSelectedProductId(e.target.value);
-                      setSelectedQuantity(1);
-                    }}
-                  >
-                    <option value="">Choisir un produit...</option>
-                    {products.map(product => (
-                      <option key={product.id} value={product.id}>
-                        {product.nom} — {formatPrice(product.prixtva)}
-                      </option>
-                    ))}
-                  </Form.Select>
-                  {selectedProductObject && (
-                    <Form.Text className={maxQuantityToAdd > 0 ? 'text-success' : 'text-danger'}>
-                      Stock: {availableStock} (Panier: {quantityInCart})
-                    </Form.Text>
+            {/* Items Section - Only if document requires items */}
+            {requiresItems && (
+              <>
+                <div className="rcpt-items-section">
+                  <h6>Ajouter des Articles</h6>
+                  <div className="row g-2">
+                    <div className="col-md-6">
+                      <Form.Label>Produit</Form.Label>
+                      <Form.Select
+                        value={selectedProductId}
+                        onChange={(e) => {
+                          setSelectedProductId(e.target.value);
+                          setSelectedQuantity(1);
+                        }}
+                      >
+                        <option value="">Choisir un produit...</option>
+                        {products.map(product => (
+                          <option key={product.id} value={product.id}>
+                            {product.nom} — {formatPrice(product.prixtva)}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      {selectedProductObject && (
+                        <Form.Text className={maxQuantityToAdd > 0 ? 'text-success' : 'text-danger'}>
+                          Stock: {availableStock} (Panier: {quantityInCart})
+                        </Form.Text>
+                      )}
+                    </div>
+                    <div className="col-md-3">
+                      <Form.Label>Quantité</Form.Label>
+                      <Form.Control
+                        type="number"
+                        min="1"
+                        max={maxQuantityToAdd > 0 ? maxQuantityToAdd : 1}
+                        value={selectedQuantity}
+                        onChange={(e) => setSelectedQuantity(parseInt(e.target.value) || 1)}
+                        disabled={!selectedProductId}
+                      />
+                    </div>
+                    <div className="col-md-3 d-flex align-items-end">
+                      <Button 
+                        variant="outline-primary" 
+                        onClick={handleAddItem} 
+                        className="w-100"
+                        disabled={!selectedProductId || maxQuantityToAdd <= 0 || selectedQuantity > maxQuantityToAdd}
+                      >
+                        Ajouter
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rcpt-cart">
+                  <h6>Articles Sélectionnés</h6>
+                  {formData.items.length === 0 ? (
+                    <p className="text-muted">Aucun article ajouté</p>
+                  ) : (
+                    <Table striped size="sm" className="rcpt-cart-table">
+                      <thead>
+                        <tr>
+                          <th>Produit</th>
+                          <th>Prix U.</th>
+                          <th>Qté</th>
+                          <th>Sous-total</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {formData.items.map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{item.nom}</td>
+                            <td>{formatPrice(item.prixtva)}</td>
+                            <td>{item.quantite}</td>
+                            <td>{formatPrice(parseFloat(item.prixtva) * item.quantite)}</td>
+                            <td>
+                              <Button variant="outline-danger" size="sm" onClick={() => handleRemoveItem(idx)}>
+                                ×
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
                   )}
                 </div>
-                <div className="col-md-3">
-                  <Form.Label>Quantité</Form.Label>
-                  <Form.Control
-                    type="number"
-                    min="1"
-                    max={maxQuantityToAdd > 0 ? maxQuantityToAdd : 1}
-                    value={selectedQuantity}
-                    onChange={(e) => setSelectedQuantity(parseInt(e.target.value) || 1)}
-                    disabled={!selectedProductId}
-                  />
-                </div>
-                <div className="col-md-3 d-flex align-items-end">
-                  <Button 
-                    variant="outline-primary" 
-                    onClick={handleAddItem} 
-                    className="w-100"
-                    disabled={!selectedProductId || maxQuantityToAdd <= 0 || selectedQuantity > maxQuantityToAdd}
-                  >
-                    Ajouter
-                  </Button>
-                </div>
-              </div>
-            </div>
+              </>
+            )}
 
-            <div className="rcpt-cart">
-              <h6>Articles Sélectionnés</h6>
-              {formData.items.length === 0 ? (
-                <p className="text-muted">Aucun article ajouté</p>
-              ) : (
-                <Table striped size="sm" className="rcpt-cart-table">
-                  <thead>
-                    <tr>
-                      <th>Produit</th>
-                      <th>Prix U.</th>
-                      <th>Qté</th>
-                      <th>Sous-total</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {formData.items.map((item, idx) => (
-                      <tr key={idx}>
-                        <td>{item.nom}</td>
-                        <td>{formatPrice(item.prixtva)}</td>
-                        <td>{item.quantite}</td>
-                        <td>{formatPrice(parseFloat(item.prixtva) * item.quantite)}</td>
-                        <td>
-                          <Button variant="outline-danger" size="sm" onClick={() => handleRemoveItem(idx)}>
-                            ×
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              )}
-            </div>
+            {/* Advance Amount - Only for RECU_AVANCE */}
+            {formData.documentType === 'RECU_AVANCE' && (
+              <Form.Group className="mb-3">
+                <Form.Label>Montant de l'Avance (DH)</Form.Label>
+                <Form.Control
+                  type="number"
+                  step="0.01"
+                  value={formData.advanceAmount}
+                  onChange={(e) => setFormData({ ...formData, advanceAmount: e.target.value })}
+                  placeholder="0.00"
+                />
+                <Form.Text className="text-muted">
+                  Montant payé par le client en avance
+                </Form.Text>
+              </Form.Group>
+            )}
+
+            <Form.Group className="mb-3">
+              <Form.Label>Notes</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                placeholder="Informations complémentaires..."
+              />
+            </Form.Group>
 
             <div className="rcpt-total">
               <h5>Total: <span>{formatPrice(formData.totalPrice)}</span></h5>
@@ -478,13 +614,13 @@ const ReceiptPage = () => {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="outline-secondary" onClick={() => setShowModal(false)}>Annuler</Button>
+          <Button variant="outline-secondary" onClick={resetForm}>Annuler</Button>
           <Button 
             className="rcpt-btn-primary" 
             onClick={handleCreate}
-            disabled={!formData.customerId || formData.items.length === 0}
+            disabled={!formData.customerId || (requiresItems && formData.items.length === 0)}
           >
-            Créer la Commande
+            Créer le Document
           </Button>
         </Modal.Footer>
       </Modal>
@@ -492,7 +628,7 @@ const ReceiptPage = () => {
       {/* PDF Preview Modal */}
       <Modal show={showPreview} onHide={closePreview} size="lg" centered className="rcpt-modal">
         <Modal.Header closeButton>
-          <Modal.Title>Aperçu du Reçu #{selectedReceiptId}</Modal.Title>
+          <Modal.Title>Aperçu du Document #{selectedReceiptId}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="rcpt-preview-body">
           {pdfUrl && (
@@ -501,7 +637,7 @@ const ReceiptPage = () => {
               width="100%"
               height="500"
               frameBorder="0"
-              title="Aperçu du Reçu"
+              title="Aperçu du Document"
               className="rcpt-iframe"
             />
           )}
