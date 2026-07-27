@@ -219,6 +219,7 @@ export const createReceipt = async (orderData) => {
     customerName: orderData.customerName,
     orderDate: orderData.orderDate,
     totalPrice: orderData.totalPrice,
+    documentType: orderData.documentType || 'BON_COMMANDE', // 🔴 ADD THIS
     items: itemsToSend
   };
 
