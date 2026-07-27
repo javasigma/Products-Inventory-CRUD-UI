@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Alert, Spinner, InputGroup, FormControl, Badge } from 'react-bootstrap';
 import { 
   Building2, ArrowLeft, Search, Plus, Download, Edit2, Trash2, 
-  Clock, DollarSign, CheckCircle, XCircle, AlertTriangle
+  Clock, CheckCircle, XCircle, AlertTriangle
 } from 'lucide-react';
 import { fetchVendors, createVendor, updateVendor, deleteVendor } from '../api/api';
 import './VendorPage.css';
