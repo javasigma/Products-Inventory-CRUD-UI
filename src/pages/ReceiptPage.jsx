@@ -1,6 +1,9 @@
 // src/pages/ReceiptPage.jsx
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Alert, Spinner } from 'react-bootstrap';
+import { Table, Button, Modal, Form, Alert, Spinner, InputGroup, FormControl } from 'react-bootstrap';
+import { 
+  FileText, DollarSign, Users, ArrowLeft, Search, Plus
+} from 'lucide-react';
 import { fetchReceipts, createReceipt, fetchProducts, downloadReceiptPdf, fetchCustomers, deleteSale } from '../api/api';
 import './ReceiptPage.css';
 import { useNavigate } from 'react-router-dom';
@@ -18,7 +21,6 @@ const ReceiptPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
-  // Form state
   const [formData, setFormData] = useState({
     customerId: '',
     totalPrice: 0,
@@ -26,21 +28,6 @@ const ReceiptPage = () => {
     items: []
   });
   
-  // --- NEW: handleDeleteSale function ---
-  const handleDeleteSale = async (saleId) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette commande ?")) {
-        try {
-            // The API call is here
-            await deleteSale(saleId); 
-            loadReceipts();
-            alert("Commande supprimée avec succès.");
-        } catch (err) {
-            alert(`Erreur lors de la suppression: ${err.message}`);
-        }
-    }
-};
-
-  // Selection states
   const [selectedProductId, setSelectedProductId] = useState('');
   const [selectedQuantity, setSelectedQuantity] = useState(1);
 
@@ -81,13 +68,23 @@ const ReceiptPage = () => {
     }
   };
 
+  const handleDeleteSale = async (saleId) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette commande ?")) {
+      try {
+        await deleteSale(saleId); 
+        loadReceipts();
+        alert("Commande supprimée avec succès.");
+      } catch (err) {
+        alert(`Erreur lors de la suppression: ${err.message}`);
+      }
+    }
+  };
+
   const handleAddItem = () => {
     if (!selectedProductId) return;
-
     const selectedProduct = products.find(p => p.id == selectedProductId);
     if (!selectedProduct) return;
     
-    // --- START: New validation logic ---
     const existingItem = formData.items.find(item => item.id == selectedProductId);
     const quantityInCart = existingItem ? existingItem.quantite : 0;
     const totalRequestedQuantity = quantityInCart + selectedQuantity;
@@ -97,22 +94,18 @@ const ReceiptPage = () => {
       alert(`Quantité demandée (${totalRequestedQuantity}) dépasse le stock disponible pour ${selectedProduct.nom}. Stock restant: ${remainingStock}.`);
       return;
     }
-    // --- END: New validation logic ---
 
     const existingItemIndex = formData.items.findIndex(item => item.id == selectedProductId);
     
     if (existingItemIndex >= 0) {
-      // Update existing item quantity
       const updatedItems = [...formData.items];
       updatedItems[existingItemIndex].quantite += selectedQuantity;
-      
       setFormData({
         ...formData,
         items: updatedItems,
         totalPrice: formData.totalPrice + (parseFloat(selectedProduct.prixtva) * selectedQuantity || 0)
       });
     } else {
-      // Add new item
       setFormData({
         ...formData,
         items: [...formData.items, {
@@ -125,7 +118,6 @@ const ReceiptPage = () => {
       });
     }
     
-    // Reset selection
     setSelectedProductId('');
     setSelectedQuantity(1);
   };
@@ -141,7 +133,6 @@ const ReceiptPage = () => {
   };
 
   const handleCreate = async () => {
-    // This validation is still useful for immediate feedback
     if (!formData.customerId || formData.items.length === 0) {
       setError("Veuillez sélectionner un client et au moins un article.");
       return;
@@ -153,15 +144,13 @@ const ReceiptPage = () => {
         return;
       }
 
-      // The payload is now correctly structured inside createReceipt API call
       await createReceipt({
         customerName: selectedCustomer.name,
-        orderDate: formData.orderDate + 'T00:00:00', // Backend expects LocalDateTime
+        orderDate: formData.orderDate + 'T00:00:00',
         totalPrice: formData.totalPrice,
-        items: formData.items // Pass the full item array, the API will transform it
+        items: formData.items
       });
       
-      // ... rest of the reset and closeModal logic ...
       setFormData({
         customerId: '',
         totalPrice: 0,
@@ -173,7 +162,6 @@ const ReceiptPage = () => {
       setShowModal(false);
       loadReceipts();
     } catch (err) {
-      // This will now catch the detailed error from the backend (e.g., "Insufficient stock...")
       setError(err.message);
     }
   };
@@ -214,7 +202,7 @@ const ReceiptPage = () => {
     }
     const num = Number(price);
     if (isNaN(num)) return '—';
-    return `$${num.toFixed(2)}`;
+    return `${num.toFixed(2)} DH`;
   };
 
   const closePreview = () => {
@@ -223,32 +211,30 @@ const ReceiptPage = () => {
     setSelectedReceiptId(null);
   };
 
-  // Get selected customer name for display
   const getSelectedCustomerName = () => {
     const customer = customers.find(c => c.id == formData.customerId);
     return customer ? customer.name : 'No customer selected';
   };
 
-  // --- START: New helper variables for validation ---
   const selectedProductObject = products.find(p => p.id == selectedProductId);
   const availableStock = selectedProductObject ? selectedProductObject.quantite : 0;
   const quantityInCart = formData.items.find(item => item.id == selectedProductId)?.quantite || 0;
   const maxQuantityToAdd = availableStock - quantityInCart;
-  // --- END: New helper variables ---
+
+  const totalRevenue = receipts.reduce((sum, r) => sum + (parseFloat(r.totalPrice) || 0), 0);
+  const uniqueCustomers = new Set(receipts.map(r => r.customerName)).size;
 
   if (loading) return (
-    <div className="receipt-loading-container">
+    <div className="rcpt-loading">
       <Spinner animation="border" variant="primary" />
       <p>Chargement des reçus...</p>
     </div>
   );
 
   if (error) return (
-    <div className="receipt-error-container">
+    <div className="rcpt-error">
       <Alert variant="danger">{error}</Alert>
-      <Button className="receipt-action-btn" onClick={loadReceipts}>
-        Réessayer
-      </Button>
+      <Button variant="primary" onClick={loadReceipts}>Réessayer</Button>
     </div>
   );
 
@@ -263,45 +249,66 @@ const ReceiptPage = () => {
   });
 
   return (
-    <div className="receipt-page-container">
+    <div className="rcpt-page">
       {/* Header */}
-      <Button
-      variant='outline-primary'
-      size='sm'
-      onClick={() => navigate('/dashboard')}
-      className="d-flex align-items-center gap-1">
-        <i className="fas fa-home"></i> Back to Dashboard
+      <header className="rcpt-header">
+        <Button variant="outline-light" size="sm" onClick={() => navigate('/dashboard')} className="rcpt-back-btn">
+          <ArrowLeft size={16} /> Retour
         </Button>
-      <div className="receipt-page-header">
-        <h1 className="receipt-page-title">🧾 Reçus de Vente</h1>
-        <p className="receipt-page-subtitle">Gérez vos commandes et reçus</p>
+        <div className="rcpt-header-content">
+          <h1><FileText size={28} /> Reçus de Vente</h1>
+          <p>Gérez vos commandes et reçus clients</p>
+        </div>
+      </header>
+
+      {/* Stats */}
+      <div className="rcpt-stats">
+        <div className="rcpt-stat-card">
+          <FileText size={20} />
+          <div>
+            <span className="rcpt-stat-value">{receipts.length}</span>
+            <span className="rcpt-stat-label">Commandes</span>
+          </div>
+        </div>
+        <div className="rcpt-stat-card success">
+          <DollarSign size={20} />
+          <div>
+            <span className="rcpt-stat-value">{totalRevenue.toFixed(0)}</span>
+            <span className="rcpt-stat-label">Chiffre d&apos;affaires (DH)</span>
+          </div>
+        </div>
+        <div className="rcpt-stat-card warning">
+          <Users size={20} />
+          <div>
+            <span className="rcpt-stat-value">{uniqueCustomers}</span>
+            <span className="rcpt-stat-label">Clients uniques</span>
+          </div>
+        </div>
       </div>
 
-      {/* Add Receipt Button */}
-      <Button 
-        className="receipt-action-btn receipt-action-btn-primary"
-        onClick={() => setShowModal(true)}
-      >
-        Nouvelle Commande
-      </Button>
-
-      <div className="d-flex justify-content-between align-items-center mt-3">
-        <input
-          type="text"
-          placeholder="🔍 Rechercher un reçu..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="form-control"
-          style={{ maxWidth: '300px' }}
-        />
+      {/* Toolbar */}
+      <div className="rcpt-toolbar">
+        <InputGroup className="rcpt-search">
+          <InputGroup.Text><Search size={16} /></InputGroup.Text>
+          <FormControl
+            placeholder="Rechercher par client, date, montant..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </InputGroup>
+        <div className="rcpt-actions">
+          <Button className="rcpt-btn-primary" onClick={() => setShowModal(true)}>
+            <Plus size={18} /> Nouvelle Commande
+          </Button>
+        </div>
       </div>
 
-      {/* Receipts Table */}
-      <div className="receipt-table-container mt-4">
-        <Table hover className="receipt-table">
+      {/* Table */}
+      <div className="rcpt-table-wrap">
+        <Table className="rcpt-table">
           <thead>
             <tr>
-              <th>ID</th>
+              <th>N° Commande</th>
               <th>Client</th>
               <th>Date</th>
               <th>Total</th>
@@ -312,44 +319,30 @@ const ReceiptPage = () => {
           <tbody>
             {filteredReceipts.length === 0 ? (
               <tr>
-                <td colSpan="7" className="text-center receipt-empty-state">
-                  <div className="receipt-empty-state-icon">🧾</div>
-                  <div className="receipt-empty-state-text">Aucun reçu trouvé</div>
-                  <div className="receipt-empty-state-subtext">Créez votre première commande</div>
+                <td colSpan="6" className="rcpt-empty">
+                  <FileText size={48} />
+                  <p>Aucun reçu trouvé</p>
+                  <small>Créez votre première commande</small>
                 </td>
               </tr>
             ) : (
               filteredReceipts.map((order) => (
                 <tr key={order.id}>
-                  <td>{order.id}</td>
-                  <td>{order.customerName}</td>
-                  <td>{new Date(order.orderDate).toLocaleDateString()}</td>
-                  <td>
-                    <span className="receipt-price">
-                      {formatPrice(order.totalPrice)}
-                    </span>
-                  </td>
+                  <td><code className="rcpt-id">#{order.id}</code></td>
+                  <td className="rcpt-client">{order.customerName}</td>
+                  <td>{new Date(order.orderDate).toLocaleDateString('fr-FR')}</td>
+                  <td><span className="rcpt-price">{formatPrice(order.totalPrice)}</span></td>
                   <td>{order.items?.length || 0} article(s)</td>
                   <td>
-                    <Button 
-                      className="table-action-btn table-action-btn-success"
-                      onClick={() => handlePreviewPdf(order.id)}
-                    >
+                    <Button size="sm" variant="outline-success" className="rcpt-action-btn" onClick={() => handlePreviewPdf(order.id)}>
                       Aperçu
                     </Button>
-                    <Button 
-                      className="table-action-btn table-action-btn-primary"
-                      onClick={() => handleDownloadPdf(order.id)}
-                    >
+                    <Button size="sm" variant="outline-primary" className="rcpt-action-btn" onClick={() => handleDownloadPdf(order.id)}>
                       Télécharger
                     </Button>
-                      {/* --- NEW DELETE BUTTON --- */}
-            <Button 
-              className="table-action-btn table-action-btn-danger"
-              onClick={() => handleDeleteSale(order.id)}
-            >
-              Supprimer
-            </Button>
+                    <Button size="sm" variant="outline-danger" className="rcpt-action-btn" onClick={() => handleDeleteSale(order.id)}>
+                      Supprimer
+                    </Button>
                   </td>
                 </tr>
               ))
@@ -359,15 +352,14 @@ const ReceiptPage = () => {
       </div>
 
       {/* Create Order Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" className="receipt-modal">
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered className="rcpt-modal">
         <Modal.Header closeButton>
           <Modal.Title>Créer une Commande</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form className="receipt-form">
-            {/* Customer Selection */}
+          <Form>
             <Form.Group className="mb-3">
-              <Form.Label>Sélectionner un Client</Form.Label>
+              <Form.Label>Client *</Form.Label>
               <Form.Select
                 value={formData.customerId}
                 onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
@@ -376,19 +368,19 @@ const ReceiptPage = () => {
                 <option value="">Choisir un client...</option>
                 {customers.map(customer => (
                   <option key={customer.id} value={customer.id}>
-                    {customer.name} - {customer.phone}
+                    {customer.name} — {customer.phone}
                   </option>
                 ))}
               </Form.Select>
               {formData.customerId && (
                 <Form.Text className="text-muted">
-                  Client sélectionné: {getSelectedCustomerName()}
+                  Client: {getSelectedCustomerName()}
                 </Form.Text>
               )}
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Date</Form.Label>
+              <Form.Label>Date *</Form.Label>
               <Form.Control
                 type="date"
                 value={formData.orderDate}
@@ -397,8 +389,7 @@ const ReceiptPage = () => {
               />
             </Form.Group>
 
-            {/* Product Selection */}
-            <div className="border p-3 rounded mb-3">
+            <div className="rcpt-items-section">
               <h6>Ajouter des Articles</h6>
               <div className="row g-2">
                 <div className="col-md-6">
@@ -407,20 +398,19 @@ const ReceiptPage = () => {
                     value={selectedProductId}
                     onChange={(e) => {
                       setSelectedProductId(e.target.value);
-                      setSelectedQuantity(1); // Reset quantity when product changes
+                      setSelectedQuantity(1);
                     }}
                   >
                     <option value="">Choisir un produit...</option>
                     {products.map(product => (
                       <option key={product.id} value={product.id}>
-                        {product.nom} - {formatPrice(product.prixtva)}
+                        {product.nom} — {formatPrice(product.prixtva)}
                       </option>
                     ))}
                   </Form.Select>
-                  {/* New: Display stock info */}
                   {selectedProductObject && (
-                    <Form.Text className={`text-${maxQuantityToAdd > 0 ? 'success' : 'danger'}`}>
-                      Stock disponible: {availableStock} (Déjà dans le panier: {quantityInCart})
+                    <Form.Text className={maxQuantityToAdd > 0 ? 'text-success' : 'text-danger'}>
+                      Stock: {availableStock} (Panier: {quantityInCart})
                     </Form.Text>
                   )}
                 </div>
@@ -429,7 +419,6 @@ const ReceiptPage = () => {
                   <Form.Control
                     type="number"
                     min="1"
-                    // New: Limit max input to available remaining stock
                     max={maxQuantityToAdd > 0 ? maxQuantityToAdd : 1}
                     value={selectedQuantity}
                     onChange={(e) => setSelectedQuantity(parseInt(e.target.value) || 1)}
@@ -441,7 +430,6 @@ const ReceiptPage = () => {
                     variant="outline-primary" 
                     onClick={handleAddItem} 
                     className="w-100"
-                    // New: Disable button if no product is selected or quantity is invalid
                     disabled={!selectedProductId || maxQuantityToAdd <= 0 || selectedQuantity > maxQuantityToAdd}
                   >
                     Ajouter
@@ -450,66 +438,49 @@ const ReceiptPage = () => {
               </div>
             </div>
 
-            {/* Selected Items */}
-            <h6>Articles Sélectionnés:</h6>
-            {formData.items.length === 0 ? (
-              <p className="text-primary">Aucun article ajouté.</p>
-            ) : (
-              <Table striped size="sm" className="receipt-items-table">
-                <thead>
-                  <tr>
-                    <th>Nom</th>
-                    <th>Prix Unitaire</th>
-                    <th>Quantité</th>
-                    <th>Sous-total</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {formData.items.map((item, idx) => (
-                    <tr key={idx}>
-                      <td>{item.nom}</td>
-                      <td>{formatPrice(item.prixtva)}</td>
-                      <td>{item.quantite}</td>
-                      <td>{formatPrice(parseFloat(item.prixtva) * item.quantite)}</td>
-                      <td>
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          onClick={() => handleRemoveItem(idx)}
-                        >
-                          Supprimer
-                        </Button>
-                      </td>
+            <div className="rcpt-cart">
+              <h6>Articles Sélectionnés</h6>
+              {formData.items.length === 0 ? (
+                <p className="text-muted">Aucun article ajouté</p>
+              ) : (
+                <Table striped size="sm" className="rcpt-cart-table">
+                  <thead>
+                    <tr>
+                      <th>Produit</th>
+                      <th>Prix U.</th>
+                      <th>Qté</th>
+                      <th>Sous-total</th>
+                      <th></th>
                     </tr>
-                  ))}
-                </tbody>
-              </Table>
-            )}
+                  </thead>
+                  <tbody>
+                    {formData.items.map((item, idx) => (
+                      <tr key={idx}>
+                        <td>{item.nom}</td>
+                        <td>{formatPrice(item.prixtva)}</td>
+                        <td>{item.quantite}</td>
+                        <td>{formatPrice(parseFloat(item.prixtva) * item.quantite)}</td>
+                        <td>
+                          <Button variant="outline-danger" size="sm" onClick={() => handleRemoveItem(idx)}>
+                            ×
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              )}
+            </div>
 
-            <hr />
-            <h5>Total: {formatPrice(formData.totalPrice)}</h5>
+            <div className="rcpt-total">
+              <h5>Total: <span>{formatPrice(formData.totalPrice)}</span></h5>
+            </div>
           </Form>
         </Modal.Body>
         <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setShowModal(false)}>Annuler</Button>
           <Button 
-            className="receipt-action-btn"
-            onClick={() => {
-              setShowModal(false);
-              setFormData({
-                customerId: '',
-                totalPrice: 0,
-                orderDate: new Date().toISOString().split('T')[0],
-                items: []
-              });
-              setSelectedProductId('');
-              setSelectedQuantity(1);
-            }}
-          >
-            Annuler
-          </Button>
-          <Button 
-            className="receipt-action-btn receipt-action-btn-primary"
+            className="rcpt-btn-primary" 
             onClick={handleCreate}
             disabled={!formData.customerId || formData.items.length === 0}
           >
@@ -519,36 +490,26 @@ const ReceiptPage = () => {
       </Modal>
 
       {/* PDF Preview Modal */}
-      <Modal show={showPreview} onHide={closePreview} size="lg" centered className="receipt-preview-modal">
+      <Modal show={showPreview} onHide={closePreview} size="lg" centered className="rcpt-modal">
         <Modal.Header closeButton>
           <Modal.Title>Aperçu du Reçu #{selectedReceiptId}</Modal.Title>
         </Modal.Header>
-        <Modal.Body style={{ padding: 0 }}>
-          <div className="pdf-preview-container">
-            {pdfUrl && (
-              <iframe
-                src={pdfUrl}
-                width="100%"
-                height="500"
-                frameBorder="0"
-                title="Aperçu du Reçu"
-                className="pdf-iframe"
-              />
-            )}
-          </div>
+        <Modal.Body className="rcpt-preview-body">
+          {pdfUrl && (
+            <iframe
+              src={pdfUrl}
+              width="100%"
+              height="500"
+              frameBorder="0"
+              title="Aperçu du Reçu"
+              className="rcpt-iframe"
+            />
+          )}
         </Modal.Body>
         <Modal.Footer>
-          <Button 
-            className="receipt-action-btn"
-            onClick={closePreview}
-          >
-            Fermer
-          </Button>
-          <Button
-            className="receipt-action-btn receipt-action-btn-primary"
-            onClick={() => handleDownloadPdf(selectedReceiptId)}
-          >
-            Imprimer & Télécharger
+          <Button variant="outline-secondary" onClick={closePreview}>Fermer</Button>
+          <Button className="rcpt-btn-primary" onClick={() => handleDownloadPdf(selectedReceiptId)}>
+            Télécharger PDF
           </Button>
         </Modal.Footer>
       </Modal>
