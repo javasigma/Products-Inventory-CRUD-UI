@@ -1,31 +1,33 @@
-// src/pages/ProductPage.js
+// src/pages/ProductPage.jsx
 import React, { useState, useEffect } from 'react';
 import {
-  Table, Button, Modal, Form, Alert, Spinner, InputGroup, FormControl
+  Table, Button, Modal, Form, Alert, Spinner, InputGroup, FormControl, Badge
 } from 'react-bootstrap';
+import { 
+  Plus, Search, Download, Edit2, Trash2, ArrowLeft, 
+  Package, Tag, Hash, Box, DollarSign, Layers
+} from 'lucide-react';
 import { fetchProducts, createProduct, updateProduct, deleteProduct } from '../api/api';
-import './ProductPage.css';
 import { useNavigate } from 'react-router-dom';
+import './ProductPage.css';
 
-/* ----------  CSV export helper  ---------- */
+/* ---------- CSV export helper ---------- */
 const downloadCSV = (filename, rows) => {
-  const headers = ['ID', 'Nom', 'Désignation', 'Marque', 'Fournisseur', 'Quantité', 'Prix (TVA)'];
+  const headers = ['Référence', 'Nom', 'Désignation', 'Marque', 'Fournisseur', 'Quantité', 'Prix (TVA)'];
   const csv = [
     headers.join(','),
-    ...rows.map(r =>
-      [
-        r.id,
-        `"${(r.nom || '').replace(/"/g, '""')}"`,
-        `"${(r.designation || '').replace(/"/g, '""')}"`,
-        `"${(r.marque || '').replace(/"/g, '""')}"`,
-        `"${(r.fournisseur || '').replace(/"/g, '""')}"`,
-        r.quantite ?? '',
-        r.prixtva ?? ''
-      ].join(',')
-    )
+    ...rows.map(r => [
+      r.reference || 'N/A',
+      `"${(r.nom || '').replace(/"/g, '""')}"`,
+      `"${(r.designation || '').replace(/"/g, '""')}"`,
+      `"${(r.marque || '').replace(/"/g, '""')}"`,
+      `"${(r.fournisseur || '').replace(/"/g, '""')}"`,
+      r.quantite ?? '',
+      r.prixtva ?? ''
+    ].join(','))
   ].join('\n');
 
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.setAttribute('download', filename);
@@ -41,7 +43,9 @@ const ProductPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const navigate = useNavigate();        // 🔍
+  const [sortField, setSortField] = useState('reference');
+  const [sortAsc, setSortAsc] = useState(true);
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     nom: '',
@@ -55,7 +59,15 @@ const ProductPage = () => {
   const formatPrice = price =>
     price == null || price === '' || isNaN(Number(price))
       ? '—'
-      : `$${Number(price).toFixed(2)}`;
+      : `${Number(price).toFixed(2)} DH`;
+
+  const getStockBadge = (qty) => {
+    const num = parseInt(qty) || 0;
+    if (num <= 0) return <Badge bg="danger" className="stock-badge">Rupture</Badge>;
+    if (num <= 5) return <Badge bg="warning" text="dark" className="stock-badge">Critique</Badge>;
+    if (num <= 20) return <Badge bg="info" className="stock-badge">Faible</Badge>;
+    return <Badge bg="success" className="stock-badge">OK</Badge>;
+  };
 
   useEffect(() => { loadProducts(); }, []);
 
@@ -66,7 +78,7 @@ const ProductPage = () => {
       const data = await fetchProducts();
       setProducts(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError(err.message || 'Failed to load products');
+      setError(err.message || 'Échec du chargement des produits');
     } finally {
       setLoading(false);
     }
@@ -118,112 +130,166 @@ const ProductPage = () => {
     setShowModal(false);
   };
 
-  /* ----------  filter  ---------- */
-  const filteredProducts = products.filter(p =>
-    p.nom?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.designation?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.marque?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.fournisseur?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortField(field);
+      setSortAsc(true);
+    }
+  };
 
-  /* ----------  states  ---------- */
+  const SortIcon = ({ field }) => {
+    if (sortField !== field) return <span className="sort-icon">↕</span>;
+    return <span className="sort-icon">{sortAsc ? '↑' : '↓'}</span>;
+  };
+
+  /* ---------- filter & sort ---------- */
+  const filteredProducts = products
+    .filter(p => {
+      const q = searchQuery.toLowerCase();
+      return (
+        (p.reference?.toLowerCase().includes(q)) ||
+        (p.nom?.toLowerCase().includes(q)) ||
+        (p.designation?.toLowerCase().includes(q)) ||
+        (p.marque?.toLowerCase().includes(q)) ||
+        (p.fournisseur?.toLowerCase().includes(q))
+      );
+    })
+    .sort((a, b) => {
+      let va = a[sortField] || '';
+      let vb = b[sortField] || '';
+      if (typeof va === 'string') va = va.toLowerCase();
+      if (typeof vb === 'string') vb = vb.toLowerCase();
+      if (sortField === 'quantite' || sortField === 'prixtva') {
+        va = parseFloat(va) || 0;
+        vb = parseFloat(vb) || 0;
+      }
+      if (va < vb) return sortAsc ? -1 : 1;
+      if (va > vb) return sortAsc ? 1 : -1;
+      return 0;
+    });
+
+  /* ---------- stats ---------- */
+  const totalProducts = products.length;
+  const lowStock = products.filter(p => parseInt(p.quantite) <= 5).length;
+  const totalValue = products.reduce((sum, p) => sum + (parseFloat(p.prixtva) * (parseInt(p.quantite) || 0)), 0);
+
+  /* ---------- render ---------- */
   if (loading) return (
-    <div className="product-loading-container">
-      <Spinner animation="border" variant="primary"/>
-      <p>Chargement des produits...</p>
+    <div className="inv-loading">
+      <Spinner animation="border" variant="primary" />
+      <p>Chargement de l'inventaire...</p>
     </div>
   );
 
   if (error) return (
-    <div className="product-error-container">
+    <div className="inv-error">
       <Alert variant="danger">{error}</Alert>
-      <Button className="product-action-btn" onClick={loadProducts}>Réessayer</Button>
+      <Button variant="primary" onClick={loadProducts}>Réessayer</Button>
     </div>
   );
 
   return (
-    <div className="product-page-container">
-      <div className="product-page-header">
-         <Button
-              variant='outline-primary'
-              size='sm'
-              onClick={() => navigate('/dashboard')}
-              className="d-flex align-items-center gap-1">
-                <i className="fas fa-home"></i> Back to Dashboard
-                </Button>
-        <h1 className="product-page-title">📦 Produits</h1>
-        <p className="product-page-subtitle">Gérez votre inventaire de produits</p>
+    <div className="inv-page">
+      {/* Header */}
+      <header className="inv-header">
+        <Button variant="outline-light" size="sm" onClick={() => navigate('/dashboard')} className="inv-back-btn">
+          <ArrowLeft size={16} /> Retour
+        </Button>
+        <div className="inv-header-content">
+          <h1><Package size={28} /> Gestion des Produits</h1>
+          <p>Inventaire complet • {totalProducts} articles • {lowStock} en stock critique</p>
+        </div>
+      </header>
+
+      {/* Stats Cards */}
+      <div className="inv-stats">
+        <div className="inv-stat-card">
+          <Hash size={20} />
+          <div>
+            <span className="inv-stat-value">{totalProducts}</span>
+            <span className="inv-stat-label">Produits</span>
+          </div>
+        </div>
+        <div className="inv-stat-card warning">
+          <Box size={20} />
+          <div>
+            <span className="inv-stat-value">{lowStock}</span>
+            <span className="inv-stat-label">Stock critique</span>
+          </div>
+        </div>
+        <div className="inv-stat-card success">
+          <DollarSign size={20} />
+          <div>
+            <span className="inv-stat-value">{totalValue.toFixed(0)}</span>
+            <span className="inv-stat-label">Valeur stock (DH)</span>
+          </div>
+        </div>
       </div>
 
-      {/*  TOOLBAR  */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <InputGroup className="search-bar w-50">
+      {/* Toolbar */}
+      <div className="inv-toolbar">
+        <InputGroup className="inv-search">
+          <InputGroup.Text><Search size={16} /></InputGroup.Text>
           <FormControl
-            placeholder="Rechercher un produit (nom, désignation, marque, fournisseur)..."
+            placeholder="Rechercher par référence, nom, désignation, marque..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
         </InputGroup>
-
-        <div className="d-flex gap-2">
-          <Button
-            className="product-action-btn product-action-btn-primary"
-            onClick={() => setShowModal(true)}
-          >
-            Ajouter un Produit
+        <div className="inv-actions">
+          <Button className="inv-btn-primary" onClick={() => setShowModal(true)}>
+            <Plus size={18} /> Nouveau Produit
           </Button>
-
-          <Button
-            className="product-action-btn product-action-btn-secondary"
-            variant="outline-success"
-            onClick={() => downloadCSV('produits.csv', filteredProducts)}
-          >
-            Export CSV
+          <Button variant="outline-secondary" onClick={() => downloadCSV('inventaire.csv', filteredProducts)}>
+            <Download size={16} /> Export
           </Button>
         </div>
       </div>
 
-      {/*  TABLE  */}
-      <div className="product-table-container">
-        <Table hover className="product-table">
+      {/* Table */}
+      <div className="inv-table-wrap">
+        <Table className="inv-table">
           <thead>
             <tr>
-              <th>ID</th><th>Nom</th><th>Désignation</th>
-              <th>Marque</th><th>Fournisseur</th><th>Quantité</th>
-              <th>Prix (TVA)</th><th>Actions</th>
+              <th onClick={() => handleSort('reference')}><Tag size={14} /> Référence <SortIcon field="reference" /></th>
+              <th onClick={() => handleSort('nom')}>Nom <SortIcon field="nom" /></th>
+              <th onClick={() => handleSort('designation')}>Désignation <SortIcon field="designation" /></th>
+              <th onClick={() => handleSort('marque')}>Marque <SortIcon field="marque" /></th>
+              <th onClick={() => handleSort('quantite')}>Qté <SortIcon field="quantite" /></th>
+              <th onClick={() => handleSort('prixtva')}>Prix TTC <SortIcon field="prixtva" /></th>
+              <th>Statut</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredProducts.length === 0 ? (
               <tr>
-                <td colSpan="8" className="text-center product-empty-state">
-                  <div className="product-empty-state-icon">📦</div>
-                  <div className="product-empty-state-text">Aucun produit trouvé</div>
-                  <div className="product-empty-state-subtext">Commencez par ajouter votre premier produit</div>
+                <td colSpan="8" className="inv-empty">
+                  <Package size={48} />
+                  <p>Aucun produit trouvé</p>
+                  <small>Commencez par ajouter votre premier produit</small>
                 </td>
               </tr>
             ) : (
               filteredProducts.map(p => (
-                <tr key={p.id}>
-                  <td>{p.id}</td>
-                  <td>{p.nom}</td>
-                  <td>{p.designation}</td>
-                  <td>{p.marque}</td>
-                  <td>{p.fournisseur}</td>
-                  <td>{p.quantite}</td>
-                  <td><span className="product-price">{formatPrice(p.prixtva)}</span></td>
+                <tr key={p.id} className={parseInt(p.quantite) <= 5 ? 'inv-row-warning' : ''}>
                   <td>
-                    <Button
-                      className="table-action-btn table-action-btn-warning me-2"
-                      onClick={() => handleEdit(p)}
-                    >
-                      Modifier
+                    <code className="inv-ref">{p.reference || '—'}</code>
+                  </td>
+                  <td className="inv-name">{p.nom}</td>
+                  <td className="inv-desc">{p.designation || '—'}</td>
+                  <td>{p.marque || '—'}</td>
+                  <td className="inv-qty">{p.quantite}</td>
+                  <td className="inv-price">{formatPrice(p.prixtva)}</td>
+                  <td>{getStockBadge(p.quantite)}</td>
+                  <td>
+                    <Button size="sm" variant="outline-primary" className="inv-action-btn" onClick={() => handleEdit(p)}>
+                      <Edit2 size={14} />
                     </Button>
-                    <Button
-                      className="table-action-btn table-action-btn-danger"
-                      onClick={() => handleDelete(p.id)}
-                    >
-                      Supprimer
+                    <Button size="sm" variant="outline-danger" className="inv-action-btn" onClick={() => handleDelete(p.id)}>
+                      <Trash2 size={14} />
                     </Button>
                   </td>
                 </tr>
@@ -233,82 +299,96 @@ const ProductPage = () => {
         </Table>
       </div>
 
-      {/*  MODAL  */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} className="product-modal">
+      {/* Modal */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered className="inv-modal">
         <Modal.Header closeButton>
-          <Modal.Title>{editingProduct ? 'Modifier le Produit' : 'Ajouter un Produit'}</Modal.Title>
+          <Modal.Title>
+            {editingProduct ? <><Edit2 size={18} /> Modifier</> : <><Plus size={18} /> Nouveau Produit</>}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form className="product-form">
+          <Form>
             <Form.Group className="mb-3">
-              <Form.Label>Nom</Form.Label>
+              <Form.Label><Tag size={14} /> Nom de l'article *</Form.Label>
               <Form.Control
-                type="text"
                 value={formData.nom}
                 onChange={e => setFormData({ ...formData, nom: e.target.value })}
-                placeholder="Ex: Laptop Dell"
+                placeholder="Ex: Robinet"
+                required
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Désignation</Form.Label>
+              <Form.Label><Layers size={14} /> Désignation *</Form.Label>
               <Form.Control
-                type="text"
                 value={formData.designation}
                 onChange={e => setFormData({ ...formData, designation: e.target.value })}
-                placeholder="Ex: Gaming Laptop 16GB"
+                placeholder="Ex: ROCA PETIT 90°"
+                required
               />
+              <Form.Text className="text-muted">Utilisée pour générer la référence automatique (RP0001)</Form.Text>
             </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Marque</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.marque}
-                onChange={e => setFormData({ ...formData, marque: e.target.value })}
-                placeholder="Ex: Dell, HP"
-              />
-            </Form.Group>
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Marque</Form.Label>
+                  <Form.Control
+                    value={formData.marque}
+                    onChange={e => setFormData({ ...formData, marque: e.target.value })}
+                    placeholder="Ex: ROCA"
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Fournisseur</Form.Label>
+                  <Form.Control
+                    value={formData.fournisseur}
+                    onChange={e => setFormData({ ...formData, fournisseur: e.target.value })}
+                    placeholder="Ex: Fournisseur ABC"
+                  />
+                </Form.Group>
+              </div>
+            </div>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Fournisseur</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.fournisseur}
-                onChange={e => setFormData({ ...formData, fournisseur: e.target.value })}
-                placeholder="Ex: ABC Tech"
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Quantité</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.quantite}
-                onChange={e => setFormData({ ...formData, quantite: e.target.value })}
-                placeholder="Ex: 12"
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Prix (TVA)</Form.Label>
-              <Form.Control
-                type="number"
-                step="0.01"
-                value={formData.prixtva}
-                onChange={e => setFormData({ ...formData, prixtva: e.target.value })}
-                placeholder="0.00"
-              />
-            </Form.Group>
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label><Box size={14} /> Quantité *</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={formData.quantite}
+                    onChange={e => setFormData({ ...formData, quantite: e.target.value })}
+                    placeholder="0"
+                    required
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label><DollarSign size={14} /> Prix TTC (DH) *</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="0.01"
+                    value={formData.prixtva}
+                    onChange={e => setFormData({ ...formData, prixtva: e.target.value })}
+                    placeholder="0.00"
+                    required
+                  />
+                </Form.Group>
+              </div>
+            </div>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button className="product-action-btn" onClick={() => setShowModal(false)}>Annuler</Button>
-          <Button
-            className="product-action-btn product-action-btn-primary"
+          <Button variant="outline-secondary" onClick={() => setShowModal(false)}>Annuler</Button>
+          <Button 
+            className="inv-btn-primary" 
             onClick={editingProduct ? handleUpdate : handleCreate}
+            disabled={!formData.nom || !formData.designation}
           >
-            Sauvegarder
+            {editingProduct ? 'Mettre à jour' : 'Créer le produit'}
           </Button>
         </Modal.Footer>
       </Modal>
