@@ -1,29 +1,32 @@
+// src/pages/VendorPage.jsx
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Alert, Spinner, InputGroup, FormControl } from 'react-bootstrap';
+import { Table, Button, Modal, Form, Alert, Spinner, InputGroup, FormControl, Badge } from 'react-bootstrap';
+import { 
+  Building2, ArrowLeft, Search, Plus, Download, Edit2, Trash2, 
+  Clock, DollarSign, CheckCircle, XCircle, AlertTriangle
+} from 'lucide-react';
 import { fetchVendors, createVendor, updateVendor, deleteVendor } from '../api/api';
 import './VendorPage.css';
 import { useNavigate } from 'react-router-dom';
 
-/* ----------  CSV export helper  ---------- */
+/* ---------- CSV export helper ---------- */
 const downloadCSV = (filename, rows) => {
-  const headers = ['ID','Name','Contact Person','Phone','Status','Lead Time (days)','Min. Order Value','Notes'];
-  const csvContent = [
+  const headers = ['ID', 'Name', 'Contact Person', 'Phone', 'Status', 'Lead Time (days)', 'Min. Order Value', 'Notes'];
+  const csv = [
     headers.join(','),
-    ...rows.map(r =>
-      [
-        r.id,
-        `"${(r.name || '').replace(/"/g, '""')}"`,
-        `"${(r.contactPerson || '').replace(/"/g, '""')}"`,
-        `"${(r.phone || '').replace(/"/g, '""')}"`,
-        r.status,
-        r.leadTimeDays ?? '',
-        r.minimumOrderValue ?? '',
-        `"${(r.notes || '').replace(/"/g, '""')}"`
-      ].join(',')
-    )
+    ...rows.map(r => [
+      r.id,
+      `"${(r.name || '').replace(/"/g, '""')}"`,
+      `"${(r.contactPerson || '').replace(/"/g, '""')}"`,
+      `"${(r.phone || '').replace(/"/g, '""')}"`,
+      r.status,
+      r.leadTimeDays ?? '',
+      r.minimumOrderValue ?? '',
+      `"${(r.notes || '').replace(/"/g, '""')}"`
+    ].join(','))
   ].join('\n');
 
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.setAttribute('download', filename);
@@ -54,12 +57,12 @@ const VendorPage = () => {
   useEffect(() => { loadVendors(); }, []);
 
   const loadVendors = async () => {
-    setLoading(true); setError(null);
+    setLoading(true);
+    setError(null);
     try {
       const data = await fetchVendors();
       setVendors(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error(err);
       setError(err.message || 'Failed to load vendors');
       setVendors([]);
     } finally {
@@ -97,7 +100,7 @@ const VendorPage = () => {
   };
 
   const handleDelete = async id => {
-    if (!window.confirm('Are you sure you want to delete this vendor?')) return;
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce fournisseur ?')) return;
     try {
       await deleteVendor(id);
       loadVendors();
@@ -113,7 +116,16 @@ const VendorPage = () => {
     setShowModal(false);
   };
 
-  /* ----------  search & filter  ---------- */
+  const getStatusBadge = (status) => {
+    switch (status?.toUpperCase()) {
+      case 'ACTIVE': return <Badge bg="success" className="vnd-badge"><CheckCircle size={12} /> Actif</Badge>;
+      case 'SUSPENDED': return <Badge bg="warning" text="dark" className="vnd-badge"><AlertTriangle size={12} /> Suspendu</Badge>;
+      case 'ARCHIVED': return <Badge bg="secondary" className="vnd-badge"><XCircle size={12} /> Archivé</Badge>;
+      default: return <Badge bg="secondary" className="vnd-badge">{status}</Badge>;
+    }
+  };
+
+  /* ---------- filter ---------- */
   const filteredVendors = vendors.filter(v =>
     v.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     v.contactPerson?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -121,118 +133,124 @@ const VendorPage = () => {
     v.status?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  /* ----------  loading / error states  ---------- */
+  /* ---------- stats ---------- */
+  const totalVendors = vendors.length;
+  const activeVendors = vendors.filter(v => v.status === 'ACTIVE').length;
+  const avgLeadTime = vendors.length > 0
+    ? Math.round(vendors.reduce((sum, v) => sum + (parseInt(v.leadTimeDays) || 0), 0) / vendors.length)
+    : 0;
+
+  /* ---------- render ---------- */
   if (loading) return (
-    <div className="vendor-page-container">
-      <div className="vendor-loading-container text-center">
-        <Spinner animation="border" variant="primary"/>
-        <p>Loading vendors...</p>
-      </div>
+    <div className="vnd-loading">
+      <Spinner animation="border" variant="primary" />
+      <p>Chargement des fournisseurs...</p>
     </div>
   );
 
   if (error) return (
-    <div className="vendor-page-container">
-      <div className="vendor-error-container">
-        <Alert variant="danger">{error}</Alert>
-        <Button className="vendor-action-btn" onClick={loadVendors}>Retry</Button>
-      </div>
+    <div className="vnd-error">
+      <Alert variant="danger">{error}</Alert>
+      <Button variant="primary" onClick={loadVendors}>Réessayer</Button>
     </div>
   );
 
-  /* ----------  render  ---------- */
-// ✅ Initialize navigate
-
-  // ... (all your existing state and logic)
-
   return (
-    <div className="vendor-page-container">
-      {/* 🔼 NEW: Back to Dashboard Button */}
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <Button
-          variant="outline-primary"
-          size="sm"
-          onClick={() => navigate('/dashboard')}
-          className="d-flex align-items-center gap-1"
-        >
-          <i className="fas fa-home"></i> Back to Dashboard
+    <div className="vnd-page">
+      {/* Header */}
+      <header className="vnd-header">
+        <Button variant="outline-light" size="sm" onClick={() => navigate('/dashboard')} className="vnd-back-btn">
+          <ArrowLeft size={16} /> Retour
         </Button>
+        <div className="vnd-header-content">
+          <h1><Building2 size={28} /> Fournisseurs</h1>
+          <p>Gérez vos relations fournisseurs et leurs délais</p>
+        </div>
+      </header>
+
+      {/* Stats */}
+      <div className="vnd-stats">
+        <div className="vnd-stat-card">
+          <Building2 size={20} />
+          <div>
+            <span className="vnd-stat-value">{totalVendors}</span>
+            <span className="vnd-stat-label">Fournisseurs</span>
+          </div>
+        </div>
+        <div className="vnd-stat-card success">
+          <CheckCircle size={20} />
+          <div>
+            <span className="vnd-stat-value">{activeVendors}</span>
+            <span className="vnd-stat-label">Actifs</span>
+          </div>
+        </div>
+        <div className="vnd-stat-card warning">
+          <Clock size={20} />
+          <div>
+            <span className="vnd-stat-value">{avgLeadTime}j</span>
+            <span className="vnd-stat-label">Délai moyen</span>
+          </div>
+        </div>
       </div>
 
-      <div className="vendor-page-header">
-        <h2 className="vendor-page-title">🏢 Vendors</h2>
-        <p className="vendor-page-subtitle">Manage your vendor relationships</p>
-      </div>
-
-  
-
-
-      {/*  TOOLBAR  */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <InputGroup className="search-bar w-50">
+      {/* Toolbar */}
+      <div className="vnd-toolbar">
+        <InputGroup className="vnd-search">
+          <InputGroup.Text><Search size={16} /></InputGroup.Text>
           <FormControl
-            placeholder="Search vendors by name, contact, phone, or status..."
+            placeholder="Rechercher par nom, contact, téléphone..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
         </InputGroup>
-
-        <div className="d-flex gap-2">
-          <Button
-            className="vendor-action-btn vendor-action-btn-primary"
-            onClick={() => { resetForm(); setShowModal(true); }}
-          >
-            Add Vendor
+        <div className="vnd-actions">
+          <Button className="vnd-btn-primary" onClick={() => { resetForm(); setShowModal(true); }}>
+            <Plus size={18} /> Nouveau Fournisseur
           </Button>
-
-          <Button
-            className="vendor-action-btn vendor-action-btn-secondary"
-            variant="outline-success"
-            onClick={() => downloadCSV('vendors.csv', filteredVendors)}
-          >
-            Export CSV
+          <Button variant="outline-secondary" onClick={() => downloadCSV('fournisseurs.csv', filteredVendors)}>
+            <Download size={16} /> Export
           </Button>
         </div>
       </div>
 
-      {/*  TABLE  */}
-      <div className="vendor-table-container">
-        <Table striped hover className="vendor-table">
+      {/* Table */}
+      <div className="vnd-table-wrap">
+        <Table className="vnd-table">
           <thead>
             <tr>
-              <th>ID</th><th>Name</th><th>Contact Person</th>
-              <th>Phone</th><th>Status</th><th>Actions</th>
+              <th>Nom</th>
+              <th>Contact</th>
+              <th>Téléphone</th>
+              <th>Statut</th>
+              <th>Délai</th>
+              <th>Commande min.</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredVendors.length === 0 ? (
               <tr>
-                <td colSpan="6" className="text-center vendor-empty-state">
-                  No vendors found
+                <td colSpan="7" className="vnd-empty">
+                  <Building2 size={48} />
+                  <p>Aucun fournisseur trouvé</p>
+                  <small>Ajoutez votre premier fournisseur</small>
                 </td>
               </tr>
             ) : (
               filteredVendors.map(v => (
                 <tr key={v.id}>
-                  <td>{v.id}</td>
-                  <td>{v.name}</td>
-                  <td>{v.contactPerson}</td>
-                  <td>{v.phone}</td>
-                  <td>{v.status}</td>
+                  <td className="vnd-name">{v.name}</td>
+                  <td>{v.contactPerson || '—'}</td>
+                  <td>{v.phone || '—'}</td>
+                  <td>{getStatusBadge(v.status)}</td>
+                  <td className="vnd-lead">{v.leadTimeDays ? `${v.leadTimeDays} jours` : '—'}</td>
+                  <td className="vnd-min">{v.minimumOrderValue ? `${Number(v.minimumOrderValue).toFixed(2)} DH` : '—'}</td>
                   <td>
-                    <Button
-                      className="table-action-btn table-action-btn-warning me-2"
-                      size="sm"
-                      onClick={() => handleEdit(v)}
-                    >
-                      Edit
+                    <Button size="sm" variant="outline-primary" className="vnd-action-btn" onClick={() => handleEdit(v)}>
+                      <Edit2 size={14} />
                     </Button>
-                    <Button
-                      className="table-action-btn table-action-btn-danger"
-                      size="sm"
-                      onClick={() => handleDelete(v.id)}
-                    >
-                      Delete
+                    <Button size="sm" variant="outline-danger" className="vnd-action-btn" onClick={() => handleDelete(v.id)}>
+                      <Trash2 size={14} />
                     </Button>
                   </td>
                 </tr>
@@ -242,77 +260,88 @@ const VendorPage = () => {
         </Table>
       </div>
 
-      {/*  MODAL  */}
-      <Modal show={showModal} onHide={resetForm} className="vendor-modal">
+      {/* Modal */}
+      <Modal show={showModal} onHide={resetForm} centered className="vnd-modal">
         <Modal.Header closeButton>
-          <Modal.Title>{editingVendor ? 'Edit Vendor' : 'Add Vendor'}</Modal.Title>
+          <Modal.Title>
+            {editingVendor ? <><Edit2 size={18} /> Modifier</> : <><Plus size={18} /> Nouveau Fournisseur</>}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form className="vendor-form">
+          <Form>
             <Form.Group className="mb-3">
-              <Form.Label>Name</Form.Label>
+              <Form.Label>Nom du fournisseur *</Form.Label>
               <Form.Control
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                placeholder="Vendor name"
+                placeholder="Ex: Fournisseur ABC"
                 required
               />
             </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Contact Person</Form.Label>
-              <Form.Control
-                name="contactPerson"
-                value={formData.contactPerson}
-                onChange={handleInputChange}
-                placeholder="John Smith"
-              />
-            </Form.Group>
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Contact</Form.Label>
+                  <Form.Control
+                    name="contactPerson"
+                    value={formData.contactPerson}
+                    onChange={handleInputChange}
+                    placeholder="Ex: Jean Dupont"
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Téléphone</Form.Label>
+                  <Form.Control
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="Ex: +212 6XX XXX XXX"
+                  />
+                </Form.Group>
+              </div>
+            </div>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Phone</Form.Label>
-              <Form.Control
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                placeholder="+33 1 23 45 67 89"
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Status</Form.Label>
-              <Form.Select
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-              >
-                <option value="ACTIVE">Active</option>
-                <option value="SUSPENDED">Suspended</option>
-                <option value="ARCHIVED">Archived</option>
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Lead Time (Days)</Form.Label>
-              <Form.Control
-                name="leadTimeDays"
-                type="number"
-                value={formData.leadTimeDays}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Minimum Order Value</Form.Label>
-              <Form.Control
-                name="minimumOrderValue"
-                type="number"
-                step="0.01"
-                value={formData.minimumOrderValue}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
+            <div className="row">
+              <div className="col-md-4">
+                <Form.Group className="mb-3">
+                  <Form.Label>Statut</Form.Label>
+                  <Form.Select name="status" value={formData.status} onChange={handleInputChange}>
+                    <option value="ACTIVE">Actif</option>
+                    <option value="SUSPENDED">Suspendu</option>
+                    <option value="ARCHIVED">Archivé</option>
+                  </Form.Select>
+                </Form.Group>
+              </div>
+              <div className="col-md-4">
+                <Form.Group className="mb-3">
+                  <Form.Label>Délai (jours)</Form.Label>
+                  <Form.Control
+                    name="leadTimeDays"
+                    type="number"
+                    value={formData.leadTimeDays}
+                    onChange={handleInputChange}
+                    placeholder="7"
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-4">
+                <Form.Group className="mb-3">
+                  <Form.Label>Commande min. (DH)</Form.Label>
+                  <Form.Control
+                    name="minimumOrderValue"
+                    type="number"
+                    step="0.01"
+                    value={formData.minimumOrderValue}
+                    onChange={handleInputChange}
+                    placeholder="0.00"
+                  />
+                </Form.Group>
+              </div>
+            </div>
 
             <Form.Group className="mb-3">
               <Form.Label>Notes</Form.Label>
@@ -322,19 +351,19 @@ const VendorPage = () => {
                 rows={3}
                 value={formData.notes}
                 onChange={handleInputChange}
+                placeholder="Informations complémentaires..."
               />
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button className="vendor-action-btn" onClick={resetForm}>
-            Cancel
-          </Button>
-          <Button
-            className="vendor-action-btn vendor-action-btn-primary"
+          <Button variant="outline-secondary" onClick={resetForm}>Annuler</Button>
+          <Button 
+            className="vnd-btn-primary" 
             onClick={handleSave}
+            disabled={!formData.name}
           >
-            {editingVendor ? 'Update' : 'Save'}
+            {editingVendor ? 'Mettre à jour' : 'Créer le fournisseur'}
           </Button>
         </Modal.Footer>
       </Modal>
