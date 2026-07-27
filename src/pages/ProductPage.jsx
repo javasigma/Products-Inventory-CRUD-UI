@@ -10,7 +10,6 @@ import {
 import { fetchProducts, createProduct, updateProduct, deleteProduct } from '../api/api';
 import { useNavigate } from 'react-router-dom';
 import './ProductPage.css';
-import PropTypes from 'prop-types'; // ➕ ADDED for ESLint
 
 /* ---------- CSV export helper ---------- */
 const downloadCSV = (filename, rows) => {
@@ -35,19 +34,6 @@ const downloadCSV = (filename, rows) => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-};
-
-/* ---------- SortIcon component with PropTypes ---------- */
-const SortIcon = ({ field, sortField, sortAsc }) => {
-  if (sortField !== field) return <span className="sort-icon">↕</span>;
-  return <span className="sort-icon">{sortAsc ? '↑' : '↓'}</span>;
-};
-
-// ➕ ADDED: PropTypes for ESLint
-SortIcon.propTypes = {
-  field: PropTypes.string.isRequired,
-  sortField: PropTypes.string.isRequired,
-  sortAsc: PropTypes.bool.isRequired
 };
 
 const ProductPage = () => {
@@ -153,6 +139,12 @@ const ProductPage = () => {
     }
   };
 
+  /* ---------- inline sort indicator - NO separate component ---------- */
+  const getSortIndicator = (field) => {
+    if (sortField !== field) return <span className="sort-icon">↕</span>;
+    return <span className="sort-icon">{sortAsc ? '↑' : '↓'}</span>;
+  };
+
   /* ---------- filter & sort ---------- */
   const filteredProducts = products
     .filter(p => {
@@ -188,7 +180,7 @@ const ProductPage = () => {
   if (loading) return (
     <div className="inv-loading">
       <Spinner animation="border" variant="primary" />
-      <p>Chargement de l&apos;inventaire...</p>  {/* ➕ FIXED: escaped apostrophe */}
+      <p>Chargement de l&apos;inventaire...</p>
     </div>
   );
 
@@ -262,12 +254,12 @@ const ProductPage = () => {
         <Table className="inv-table">
           <thead>
             <tr>
-              <th onClick={() => handleSort('reference')}><Tag size={14} /> Référence <SortIcon field="reference" sortField={sortField} sortAsc={sortAsc} /></th>
-              <th onClick={() => handleSort('nom')}>Nom <SortIcon field="nom" sortField={sortField} sortAsc={sortAsc} /></th>
-              <th onClick={() => handleSort('designation')}>Désignation <SortIcon field="designation" sortField={sortField} sortAsc={sortAsc} /></th>
-              <th onClick={() => handleSort('marque')}>Marque <SortIcon field="marque" sortField={sortField} sortAsc={sortAsc} /></th>
-              <th onClick={() => handleSort('quantite')}>Qté <SortIcon field="quantite" sortField={sortField} sortAsc={sortAsc} /></th>
-              <th onClick={() => handleSort('prixtva')}>Prix TTC <SortIcon field="prixtva" sortField={sortField} sortAsc={sortAsc} /></th>
+              <th onClick={() => handleSort('reference')}><Tag size={14} /> Référence {getSortIndicator('reference')}</th>
+              <th onClick={() => handleSort('nom')}>Nom {getSortIndicator('nom')}</th>
+              <th onClick={() => handleSort('designation')}>Désignation {getSortIndicator('designation')}</th>
+              <th onClick={() => handleSort('marque')}>Marque {getSortIndicator('marque')}</th>
+              <th onClick={() => handleSort('quantite')}>Qté {getSortIndicator('quantite')}</th>
+              <th onClick={() => handleSort('prixtva')}>Prix TTC {getSortIndicator('prixtva')}</th>
               <th>Statut</th>
               <th>Actions</th>
             </tr>
@@ -278,7 +270,7 @@ const ProductPage = () => {
                 <td colSpan="8" className="inv-empty">
                   <Package size={48} />
                   <p>Aucun produit trouvé</p>
-                  <small>Commencez par ajouter votre premier produit</small>  {/* ➕ FIXED: no apostrophe issue */}
+                  <small>Commencez par ajouter votre premier produit</small>
                 </td>
               </tr>
             ) : (
@@ -318,7 +310,7 @@ const ProductPage = () => {
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3">
-              <Form.Label><Tag size={14} /> Nom de l&apos;article *</Form.Label>  {/* ➕ FIXED: escaped */}
+              <Form.Label><Tag size={14} /> Nom de l&apos;article *</Form.Label>
               <Form.Control
                 value={formData.nom}
                 onChange={e => setFormData({ ...formData, nom: e.target.value })}
