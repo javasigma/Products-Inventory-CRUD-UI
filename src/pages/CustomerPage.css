@@ -409,10 +409,15 @@
   
   .cust-table th,
   .cust-table td {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.875rem;
+    padding: 0.875rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #ffffff;  /* Change this from rgba(255,255,255,0.9) to #ffffff */
+    border: none;
+    white-space: nowrap;
   }
-  
   .cust-action-btn {
     padding: 0.25rem !important;
   }
