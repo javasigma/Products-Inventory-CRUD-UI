@@ -103,7 +103,6 @@ const ReceiptPage = () => {
     const quantityInCart = existingItem ? existingItem.quantite : 0;
     const totalRequestedQuantity = quantityInCart + selectedQuantity;
 
-    // Skip stock check for returns (AVOIR)
     if (!isAvoir && totalRequestedQuantity > selectedProduct.quantite) {
       const remainingStock = selectedProduct.quantite - quantityInCart;
       alert(`Quantité demandée (${totalRequestedQuantity}) dépasse le stock disponible pour ${selectedProduct.nom}. Stock restant: ${remainingStock}.`);
@@ -154,7 +153,6 @@ const ReceiptPage = () => {
       return;
     }
 
-    // REÇU: no items, just an amount
     if (isRecu) {
       const amount = parseFloat(recuAmount);
       if (!recuAmount || isNaN(amount) || amount <= 0) {
@@ -178,7 +176,6 @@ const ReceiptPage = () => {
       return;
     }
 
-    // Everything else: needs at least one item
     if (formData.items.length === 0) {
       setError("Veuillez ajouter au moins un article.");
       return;
@@ -311,7 +308,6 @@ const ReceiptPage = () => {
 
   return (
     <div className="rcpt-page">
-      {/* Header */}
       <header className="rcpt-header">
         <Button variant="outline-light" size="sm" onClick={() => navigate('/dashboard')} className="rcpt-back-btn">
           <ArrowLeft size={16} /> Retour
@@ -322,7 +318,6 @@ const ReceiptPage = () => {
         </div>
       </header>
 
-      {/* Stats */}
       <div className="rcpt-stats">
         <div className="rcpt-stat-card">
           <FileText size={20} />
@@ -347,7 +342,6 @@ const ReceiptPage = () => {
         </div>
       </div>
 
-      {/* Toolbar */}
       <div className="rcpt-toolbar">
         <InputGroup className="rcpt-search">
           <InputGroup.Text><Search size={16} /></InputGroup.Text>
@@ -364,7 +358,6 @@ const ReceiptPage = () => {
         </div>
       </div>
 
-      {/* Table */}
       <div className="rcpt-table-wrap">
         <Table className="rcpt-table">
           <thead>
@@ -414,7 +407,6 @@ const ReceiptPage = () => {
         </Table>
       </div>
 
-      {/* Create Document Modal */}
       <Modal show={showModal} onHide={() => { setShowModal(false); resetForm(); }} size="lg" centered className="rcpt-modal">
         <Modal.Header closeButton>
           <Modal.Title>Nouveau {getDocTypeLabel(documentType)}</Modal.Title>
@@ -423,7 +415,6 @@ const ReceiptPage = () => {
           {error && showModal && <Alert variant="danger" onClose={() => setError(null)} dismissible>{error}</Alert>}
           
           <Form>
-            {/* Document Type */}
             <Form.Group className="mb-3">
               <Form.Label>Type de document *</Form.Label>
               <Form.Select
@@ -439,7 +430,6 @@ const ReceiptPage = () => {
               </Form.Select>
             </Form.Group>
 
-            {/* Client */}
             <Form.Group className="mb-3">
               <Form.Label>Client *</Form.Label>
               <Form.Select
@@ -461,7 +451,6 @@ const ReceiptPage = () => {
               )}
             </Form.Group>
 
-            {/* Date */}
             <Form.Group className="mb-3">
               <Form.Label>Date *</Form.Label>
               <Form.Control
@@ -472,10 +461,9 @@ const ReceiptPage = () => {
               />
             </Form.Group>
 
-            {/* REÇU: Amount input only */}
             {isRecu ? (
               <Form.Group className="mb-3">
-                <Form.Label>Montant de l'acompte (DH) *</Form.Label>
+                <Form.Label>Montant de l&apos;acompte (DH) *</Form.Label>
                 <Form.Control
                   type="number"
                   min="0.01"
@@ -485,12 +473,11 @@ const ReceiptPage = () => {
                   onChange={(e) => setRecuAmount(e.target.value)}
                 />
                 <Form.Text className="text-muted">
-                  Aucun article n'est requis pour un reçu d'acompte.
+                  Aucun article n&apos;est requis pour un reçu d&apos;acompte.
                 </Form.Text>
               </Form.Group>
             ) : (
               <>
-                {/* Product Selector */}
                 <div className="rcpt-items-section">
                   <h6>{isAvoir ? 'Articles retournés' : 'Ajouter des Articles'}</h6>
                   <div className="row g-2">
@@ -543,7 +530,6 @@ const ReceiptPage = () => {
                   </div>
                 </div>
 
-                {/* Cart */}
                 <div className="rcpt-cart">
                   <h6>{isAvoir ? 'Articles retournés' : 'Articles sélectionnés'}</h6>
                   {formData.items.length === 0 ? (
@@ -599,7 +585,6 @@ const ReceiptPage = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* PDF Preview Modal */}
       <Modal show={showPreview} onHide={closePreview} size="lg" centered className="rcpt-modal">
         <Modal.Header closeButton>
           <Modal.Title>Aperçu du Document #{selectedReceiptId}</Modal.Title>
